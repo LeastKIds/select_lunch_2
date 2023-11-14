@@ -4,6 +4,18 @@ import { GoogleMap, LoadScript } from '@react-google-maps/api';
 
 function App() {
 
+  const client = axios.create({
+    withCredentials: false,
+    headers: {
+      'Access-Control-Allow_credentials': true,
+      'ngrok-skip-brower-warning': true,
+      Authorization: `Bearer ${process.env.NGROK}`
+    }
+  })
+
+
+
+
   const containerStyle = {
     display: 'flex',
     justifyContent: 'center', // 수평 정렬을 위해
@@ -46,9 +58,10 @@ function App() {
   const handleButton = () => {
     (async () => {
       try {
-        
+        console.log("test")
         // const response = await axios.get("http://leastkids@leastkids.iptime.org:8080/search/" + keyword);
-        const response = await axios.get("http://126.44.208.85:8080/search/" + keyword);
+        // const response = await axios.get("http://126.44.208.85:8080/search/" + keyword);
+        const response = await client.get("https://4e39-126-44-208-85.ngrok-free.app/search/" + keyword);
         const result = response.data.results;
 
 
@@ -82,11 +95,11 @@ function App() {
   }
 
   useEffect(() => {
-    console.log("test")
     if (navigator.geolocation) {
-      console.log("Test")
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          console.log(position.coords.latitude)
+          console.log(position.coords.longitude)
           setLatitude(position.coords.latitude);
           setLongitude(position.coords.longitude); 
         },
