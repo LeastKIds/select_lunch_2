@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  java:
+    image: gradle:jdk17
+    volumes:
+      - ./backend/select_lunch:/app
+    ports:
+      - "8080:8080"
+    networks:
+      - our_net
+    container_name: javaSelectLunch
+    command: sleep infinity
+
+  react:
+    image: node:21
+    volumes:
+      - ./frontend:/app
+    networks:
+      - our_net
+    ports:
+      - "3000:3000"
+    container_name: reactSelectLunch
+    command: sleep infinity
+
+networks:
+  our_net:
+    driver: bridge
