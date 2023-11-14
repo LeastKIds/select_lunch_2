@@ -1,7 +1,6 @@
 import axios from "axios";
-import { useState } from "react";
-import {Wrapper} from "@googlemaps/react-wrapper"
-
+import { useState, useRef, useEffect, useCallback } from "react";
+import { GoogleMap, LoadScript } from '@react-google-maps/api';
 
 function App() {
 
@@ -30,19 +29,26 @@ function App() {
     cursor: 'pointer'
   };
 
-  const [keyward, setKeyward] = useState('');
+  const mapStyle = {
+    display: "flex",
+    justifyContent: "center"
+  }
+
+  const [keyword, setkeyword] = useState('');
+
+  
 
   const handleInputChange = (event) => {
-    setKeyward(event.target.value)
-    console.log(keyward)
+    setkeyword(event.target.value)
+    console.log(keyword)
   }
 
   const handleButton = () => {
     (async () => {
       try {
         
-        // const response = await axios.get("http://leastkids@leastkids.iptime.org:8080/search/" + keyward);
-        const response = await axios.get("http://126.44.208.85:8080/search/" + keyward);
+        // const response = await axios.get("http://leastkids@leastkids.iptime.org:8080/search/" + keyword);
+        const response = await axios.get("http://126.44.208.85:8080/search/" + keyword);
         const result = response.data.results;
 
 
@@ -51,24 +57,86 @@ function App() {
         console.error(error);
       }
     })();
+
+
   }
+
+  const containerStyle2 = {
+    width: '700px',
+    height: '400px'
+  };
+
+  const[latitude, setLatitude] = useState(35.67642344101245);
+  const[longitude, setLongitude] = useState(139.65002534640476);
+
+  const success = (event) => {
+    console.log(event.coords.latitude);
+    console.log(event.coords.longitude);
+
+    setLatitude(event.coords.latitude);   // 위도
+    setLongitude(event.coords.longitude);  // 경도
+  }
+
+  const error = (event) => {
+    console.log(event);
+  }
+
+  useEffect(() => {
+    console.log("test")
+    if (navigator.geolocation) {
+      console.log("Test")
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLatitude(position.coords.latitude);
+          setLongitude(position.coords.longitude); 
+        },
+        (error) => {
+          console.error("Error Code = " + error.code + " - " + error.message);
+        }
+      );
+    }
+
+  }, []);
+  
+  const center = {
+    lat: latitude,
+    lng: longitude
+  };
+
+  
+
+  const googleApi = process.env.GOOGLE_MAP_API
 
   return (
     <div className="App">
       <div style={containerStyle}>
-        <input type="text" style={inputStyle} placeholder="여기에 입력하세요" value={keyward} onChange={handleInputChange} />
+        <input type="text" style={inputStyle} placeholder="여기에 입력하세요" value={keyword} onChange={handleInputChange} />
         <button style={buttonStyle} onClick={handleButton}>클릭</button>
         <br />
         <br />
         <br />
         <br />
-        <Wrapper apiKey="" libraries={"places"}>
+        
 
-        </Wrapper>
+      </div>
 
-    </div>
+      <div style={mapStyle}>
+        <LoadScript
+        googleMapsApiKey={googleApi}
+      >
+        <GoogleMap
+          mapContainerStyle={containerStyle2}
+          center={{lat: latitude, lng: longitude}}
+          zoom={14}
+        >
+          <></>
+        </GoogleMap>
+      </LoadScript>
+      </div>
+        
     </div>
   );
 }
+
 
 export default App;
