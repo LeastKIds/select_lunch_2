@@ -1,19 +1,18 @@
 import axios from "axios";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
+
 
 function App() {
 
   const client = axios.create({
-    withCredentials: false,
+    withCredentials: true,
     headers: {
-      'Access-Control-Allow_credentials': true,
-      'ngrok-skip-brower-warning': true,
-      Authorization: `Bearer ${process.env.NGROK}`
+      'Access-Control-Allow-Credentials': true,
+      'ngrok-skip-browser-warning': true,
+      Authorization: `Bearer ${process.env.REACT_APP_NGROK}`
     }
   })
-
-
 
 
   const containerStyle = {
@@ -61,9 +60,9 @@ function App() {
         console.log("test")
         // const response = await axios.get("http://leastkids@leastkids.iptime.org:8080/search/" + keyword);
         // const response = await axios.get("http://126.44.208.85:8080/search/" + keyword);
-        const response = await client.get("https://4e39-126-44-208-85.ngrok-free.app/search/" + keyword);
-        const result = response.data.results;
-
+        const response = await client.get("https://2901-126-44-208-85.ngrok-free.app/search/" + keyword);
+        // const result = response.data.results;
+        console.log(response);
 
 
       } catch (error) {
@@ -82,24 +81,10 @@ function App() {
   const[latitude, setLatitude] = useState(35.67642344101245);
   const[longitude, setLongitude] = useState(139.65002534640476);
 
-  const success = (event) => {
-    console.log(event.coords.latitude);
-    console.log(event.coords.longitude);
-
-    setLatitude(event.coords.latitude);   // 위도
-    setLongitude(event.coords.longitude);  // 경도
-  }
-
-  const error = (event) => {
-    console.log(event);
-  }
-
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          console.log(position.coords.latitude)
-          console.log(position.coords.longitude)
           setLatitude(position.coords.latitude);
           setLongitude(position.coords.longitude); 
         },
@@ -111,14 +96,9 @@ function App() {
 
   }, []);
   
-  const center = {
-    lat: latitude,
-    lng: longitude
-  };
-
   
 
-  const googleApi = process.env.GOOGLE_MAP_API
+  const googleApi = process.env.REACT_APP_GOOGLE_MAP_API
 
   return (
     <div className="App">
