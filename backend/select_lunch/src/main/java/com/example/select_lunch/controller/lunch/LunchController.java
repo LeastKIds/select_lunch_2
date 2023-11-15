@@ -110,7 +110,7 @@ public class LunchController {
 
 
     @PostMapping("/search/{keyward}")
-    public ResponseEntity<JsonNode> searchOfCurrentLocation(@PathVariable String keyward, @RequestBody SearchOfCurrentLocationRequest searchOfCurrentLocationRequest) {
+    public ResponseEntity<SearchResponse> searchOfCurrentLocation(@PathVariable String keyward, @RequestBody SearchOfCurrentLocationRequest searchOfCurrentLocationRequest) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(lunchService

@@ -57,7 +57,6 @@ function App() {
   const handleButton = () => {
     (async () => {
       try {
-        console.log("test")
         // const response = await axios.get("http://leastkids@leastkids.iptime.org:8080/search/" + keyword);
         // const response = await axios.get("http://126.44.208.85:8080/search/" + keyword);
         // const response = await client.get("https://2901-126-44-208-85.ngrok-free.app/search/" + keyword);
@@ -65,9 +64,10 @@ function App() {
           lat: latitude, lng: longitude
         });
         const data = response.data;
-        setRestaurants(data);
-        console.log(data)
-        console.log(restaurants)
+        console.log(response);
+        // setRestaurants(data);
+        // console.log(data)
+        // console.log(restaurants)
       } catch (error) {
         console.error(error);
       }

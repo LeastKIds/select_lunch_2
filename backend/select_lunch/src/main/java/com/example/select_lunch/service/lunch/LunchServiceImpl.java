@@ -11,6 +11,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +26,8 @@ public class LunchServiceImpl implements LunchService{
     private final RestTemplate restTemplate;
 
     @Override
-    public JsonNode searchOfCurrentLocation(String keyward, double lat, double lng) {
-     
+    public SearchResponse searchOfCurrentLocation(String keyward, double lat, double lng) {
+
         String baseUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
         String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
                     .queryParam("keyword", keyward)
@@ -40,7 +41,13 @@ public class LunchServiceImpl implements LunchService{
                     .encode()
                     .toUriString();
 
-        return restTemplate.getForObject(url,JsonNode.class);
+        JsonNode jsonNode = restTemplate.getForObject(url,JsonNode.class);
+        JsonNode jsonNode2 =  jsonNode.get("results").get(0);
+        System.out.println(jsonNode2.toString());
+        
+        
+
+        return restTemplate.getForObject(url,SearchResponse.class);
     }
     
 }
