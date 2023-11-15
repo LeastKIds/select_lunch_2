@@ -23,13 +23,10 @@ public class LunchServiceImpl implements LunchService{
 
     private final Environment env;
     private final RestTemplate restTemplate;
-    private final ObjectMapper mapper;
-
 
     @Override
     public JsonNode searchOfCurrentLocation(String keyward, double lat, double lng) {
      
-        
         String baseUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
         String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
                     .queryParam("keyword", keyward)

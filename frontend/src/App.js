@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import RestaurantBoxComponent from "./component/RestaurantBoxComponent";
 
 
 function App() {
@@ -46,12 +47,11 @@ function App() {
   }
 
   const [keyword, setkeyword] = useState('');
-
+  const [restaurants, setRestaurants] = useState(null);
   
 
   const handleInputChange = (event) => {
     setkeyword(event.target.value)
-    console.log(keyword)
   }
 
   const handleButton = () => {
@@ -64,10 +64,10 @@ function App() {
         const response = await client.post("https://2901-126-44-208-85.ngrok-free.app/search/" + keyword, {
           lat: latitude, lng: longitude
         });
-        // const result = response.data.results;
-        console.log(response);
-
-
+        const data = response.data;
+        setRestaurants(data);
+        console.log(data)
+        console.log(restaurants)
       } catch (error) {
         console.error(error);
       }
@@ -128,6 +128,17 @@ function App() {
           <></>
         </GoogleMap>
       </LoadScript>
+      </div>
+
+      <div>
+        {
+          restaurants && 
+          <>
+            <RestaurantBoxComponent restaurants={restaurants["results"]} />
+          
+            {/* {restaurants["results"].map(result => <div>{result["name"]}</div>)} */}
+          </>
+        }
       </div>
         
     </div>

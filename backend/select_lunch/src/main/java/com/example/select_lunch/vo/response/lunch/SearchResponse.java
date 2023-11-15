@@ -10,7 +10,7 @@ import lombok.Data;
 public class SearchResponse {
    private ArrayList html_attributions;
    private String next_page_token;
-   private ArrayList<ResultResponse> results;
+   private ArrayList<Object> results;
    private Integer status;
 }
 
