@@ -60,7 +60,10 @@ function App() {
         console.log("test")
         // const response = await axios.get("http://leastkids@leastkids.iptime.org:8080/search/" + keyword);
         // const response = await axios.get("http://126.44.208.85:8080/search/" + keyword);
-        const response = await client.get("https://2901-126-44-208-85.ngrok-free.app/search/" + keyword);
+        // const response = await client.get("https://2901-126-44-208-85.ngrok-free.app/search/" + keyword);
+        const response = await client.post("https://2901-126-44-208-85.ngrok-free.app/search/" + keyword, {
+          lat: latitude, lng: longitude
+        });
         // const result = response.data.results;
         console.log(response);
 

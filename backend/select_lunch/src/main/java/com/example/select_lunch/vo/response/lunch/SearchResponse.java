@@ -8,21 +8,9 @@ import lombok.Data;
 @Data
 @Builder
 public class SearchResponse {
-    private String business_status;
-    private Geometry geometry;
-    private String icon;
-    private String icon_background_color;
-    private String icon_mask_base_uri;
-    private String name;
-    private OpeningHours opening_hours;
-    private ArrayList<Photo> photos;
-    private String place_id;
-    private PlusCode plus_code;
-    private Double rating;
-    private String reference;
-    private String scope;
-    private ArrayList<String> types;
-    private Integer user_ratings_total;
-    private String vicinity;
+   private ArrayList html_attributions;
+   private String next_page_token;
+   private ArrayList<ResultResponse> results;
+   private Integer status;
 }
 
