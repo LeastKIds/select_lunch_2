@@ -44,7 +44,7 @@ const RestaurantBoxComponent = ({restaurants}) => {
                                 {data["name"]}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                    open: {data["opening_hours"]["open_now"] ? "open" : "close"}<br/>
+                                    open: {data["opening_hours"]?.open_now == null ? "Undetermined" : data["opening_hours"].open_now}<br/>
                                     price_level: {data["price_level"] ? data["price_level"] : "nothing" }<br/>
                                     vicinity: {data["vicinity"]}
                                 </Typography>

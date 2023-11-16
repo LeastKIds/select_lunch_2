@@ -41,11 +41,7 @@ public class LunchServiceImpl implements LunchService{
         SearchResponse response = restTemplate.getForObject(url,SearchResponse.class);
         ArrayList<Result> results = response.getResults();
 
-        // for(int i = 0; i<results.size(); i++) {
-
-        // }
-        
-
+        System.out.println(results.get(0));
 
         return response;
     }

@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { GoogleMap, LoadScript, MarkerF, InfoWindowF } from '@react-google-maps/api';
 import RestaurantBoxComponent from "./component/RestaurantBoxComponent";
+import Modal from 'react-modal';
 
 
 function App() {
@@ -68,7 +69,10 @@ function App() {
   const [longitude, setLongitude] = useState(139.65002534640476);
 
   const [position, setPosition] = useState({lat: latitude, lng: longitude});
-  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+
+
+  Modal.setAppElement('#root');
 
 
   const googleApi = process.env.REACT_APP_GOOGLE_MAP_API
@@ -172,6 +176,8 @@ function App() {
               position={position}
               draggable={true}
               onDragEnd={onMarkerDragEnd}
+
+              onClick={() => setModalIsOpen(true)}
             />
 
             
@@ -189,6 +195,25 @@ function App() {
         }
       </div>
         
+
+      <Modal 
+        isOpen={modalIsOpen}
+        
+        style={{
+          content: {
+            width: '500px',
+            height: '700px',
+            margin: 'auto', // 모달을 화면 중앙에 위치시킵니다.
+            display: 'flex', // Flexbox를 사용하여 내용을 정렬합니다.
+            flexDirection: 'column', // 아이템을 세로로 정렬합니다.
+            justifyContent: 'space-between' // 상단과 하단의 컨텐츠를 분리합니다.
+          }
+        }}
+      >
+        This is Modal content
+        <button onClick={()=> setModalIsOpen(false)}>Modal Open</button>
+      </Modal>
+
     </div>
   );
 }

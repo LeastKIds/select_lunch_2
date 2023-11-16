@@ -26,6 +26,7 @@ public class SearchResponse {
       private Integer user_ratings_total;
       private ArrayList<Photo> photos; 
       private Object opening_hours;
+      private Geometry geometry;
 
       @Data
       @Builder
@@ -34,11 +35,35 @@ public class SearchResponse {
          private String photo_reference;
       }
 
-      // @Data
-      // @Builder
-      // private static class OpeningHours {
-      //    private Boolean open_now;
-      // }
+      @Data
+      @Builder
+      public static class Geometry {
+         private Location location;
+         private Viewport Viewport;
+         
+
+         @Data
+         @Builder
+         public static class Location {
+            private Double lat;
+            private Double lng;
+         }
+
+         @Data
+         @Builder
+         public static class Viewport {
+            private Location northeast;
+            private Location southwest;
+         }
+
+
+      }
+
+      @Data
+      @Builder
+      public static class OpeningHours {
+         private Boolean open_now;
+      }
    }
 
    
