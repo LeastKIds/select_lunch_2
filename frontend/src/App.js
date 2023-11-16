@@ -92,10 +92,9 @@ function App() {
           lat: latitude, lng: longitude
         });
         const data = response.data;
-        // console.log(response);
+        console.log(data);
         setRestaurants(data);
-        // console.log(data)
-        // console.log(restaurants)
+        
       } catch (error) {
         console.error(error);
       }
@@ -149,8 +148,11 @@ function App() {
       <div style={containerStyle}>
         <input type="text" style={inputStyle} placeholder="여기에 입력하세요" value={keyword} onChange={handleInputChange} />
         <button style={buttonStyle} onClick={handleButton}>클릭</button>
-        <p>latitude: {latitude}</p>
-        <p>longitude: {longitude}</p>
+        <div>
+          <p>latitude: {latitude}</p>
+          <p>longitude: {longitude}</p>
+        </div>
+        
         <br />
         <br />
         <br />
@@ -172,13 +174,28 @@ function App() {
 
         >
           <>
-            <MarkerF 
-              position={position}
-              draggable={true}
-              onDragEnd={onMarkerDragEnd}
+            {
+            //   <MarkerF 
+            //   position={position}
+            //   draggable={true}
+            //   onDragEnd={onMarkerDragEnd}
 
-              onClick={() => setModalIsOpen(true)}
-            />
+            //   onClick={() => setModalIsOpen(true)}
+            // />
+
+              (restaurants && restaurants["results"]) && 
+              <>
+                {
+                  restaurants["results"].map((data, index) => 
+                  
+                    <MarkerF 
+                      position={{lat: data["geometry"]["location"]["lat"], lng: data["geometry"]["location"]["lng"]}}
+                      draggable={false}
+                    />
+                  )
+                }
+              </>
+            }
 
             
           </>
