@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { GoogleMap, LoadScript, MarkerF, InfoWindowF } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
 import RestaurantBoxComponent from "./component/RestaurantBoxComponent";
 import Modal from 'react-modal';
 
@@ -69,7 +69,10 @@ function App() {
   const [longitude, setLongitude] = useState(139.65002534640476);
 
   const [position, setPosition] = useState({lat: latitude, lng: longitude});
+
+  const [mapref, setMapRef] = useState(null)
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [modalData, setModalData] = useState({});
 
 
   Modal.setAppElement('#root');
@@ -104,19 +107,29 @@ function App() {
   }
 
   const onMarkerDragEnd = (event) => {
-    const lat = event.latLng.lat()
-    const lng = event.latLng.lng()
+    // const lat = event.latLng.lat()
+    // const lng = event.latLng.lng()
 
-    const newPos = {
-      lat: lat,
-      lng: lng
-    };
-    setPosition(newPos);
+    // const newPos = {
+    //   lat: lat,
+    //   lng: lng
+    // };
+    // setPosition(newPos);
 
-    setLatitude(lat);
-    setLongitude(lng);
+    // setLatitude(lat);
+    // setLongitude(lng);
+    console.log(event);
   };
 
+  const handleOnLoad = map => {
+    setMapRef(map);
+  };
+  const handleCenterChanged = () => {
+    if (mapref) {
+      const newCenter = mapref.getCenter();
+      console.log(newCenter);
+    }
+  };
 
   
 
@@ -149,8 +162,8 @@ function App() {
         <input type="text" style={inputStyle} placeholder="여기에 입력하세요" value={keyword} onChange={handleInputChange} />
         <button style={buttonStyle} onClick={handleButton}>클릭</button>
         <div>
-          <p>latitude: {latitude}</p>
-          <p>longitude: {longitude}</p>
+          <p>latitude: {position.lat}</p>
+          <p>longitude: {position.lng}</p>
         </div>
         
         <br />
@@ -172,17 +185,13 @@ function App() {
           options={{disableDefaultUI: true, styles: markerStyle}}
           onClick={(e) => {setPosition({lat: e.latLng.lat(), lng: e.latLng.lng()})}}
 
+          onLoad={handleOnLoad}
+          
+          
         >
           <>
             {
-            //   <MarkerF 
-            //   position={position}
-            //   draggable={true}
-            //   onDragEnd={onMarkerDragEnd}
-
-            //   onClick={() => setModalIsOpen(true)}
-            // />
-
+           
               (restaurants && restaurants["results"]) && 
               <>
                 {
@@ -191,6 +200,12 @@ function App() {
                     <MarkerF 
                       position={{lat: data["geometry"]["location"]["lat"], lng: data["geometry"]["location"]["lng"]}}
                       draggable={false}
+                      onClick={() => {
+                        setModalData(data);
+
+                        setModalIsOpen(true);
+                      
+                      }}
                     />
                   )
                 }
@@ -227,8 +242,8 @@ function App() {
           }
         }}
       >
-        This is Modal content
-        <button onClick={()=> setModalIsOpen(false)}>Modal Open</button>
+        <h1>name: {modalData.name}</h1>
+        <button onClick={()=> setModalIsOpen(false)}>Modal Close</button>
       </Modal>
 
     </div>
