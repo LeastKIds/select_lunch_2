@@ -16,7 +16,7 @@ public class SearchResponse {
 
    @Data
    @Builder
-   private static class Result {
+   public static class Result {
       private String name;
       private String place_id;
       private Integer price_level;
@@ -29,7 +29,7 @@ public class SearchResponse {
 
       @Data
       @Builder
-      private static class Photo {
+      public static class Photo {
          private ArrayList<String> html_attributions;
          private String photo_reference;
       }

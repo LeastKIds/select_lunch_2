@@ -1,7 +1,6 @@
 package com.example.select_lunch.service.lunch;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -9,9 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.example.select_lunch.vo.response.lunch.SearchResponse.Result;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,13 +38,16 @@ public class LunchServiceImpl implements LunchService{
                     .encode()
                     .toUriString();
 
-        JsonNode jsonNode = restTemplate.getForObject(url,JsonNode.class);
-        JsonNode jsonNode2 =  jsonNode.get("results").get(0);
-        System.out.println(jsonNode2.toString());
-        
+        SearchResponse response = restTemplate.getForObject(url,SearchResponse.class);
+        ArrayList<Result> results = response.getResults();
+
+        // for(int i = 0; i<results.size(); i++) {
+
+        // }
         
 
-        return restTemplate.getForObject(url,SearchResponse.class);
+
+        return response;
     }
     
 }
