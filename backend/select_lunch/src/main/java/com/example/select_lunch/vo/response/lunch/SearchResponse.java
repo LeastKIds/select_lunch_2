@@ -59,11 +59,11 @@ public class SearchResponse {
 
       }
 
-      @Data
-      @Builder
-      public static class OpeningHours {
-         private Boolean open_now;
-      }
+      // @Data
+      // @Builder
+      // public static class OpeningHours {
+      //    private Boolean open_now;
+      // }
    }
 
    

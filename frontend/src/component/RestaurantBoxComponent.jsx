@@ -44,14 +44,14 @@ const RestaurantBoxComponent = ({restaurants}) => {
                                 {data["name"]}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                    open: {data["opening_hours"]?.open_now == null ? "Undetermined" : data["opening_hours"].open_now}<br/>
+                                    open: {data["opening_hours"] && data["opening_hours"].open_now !== null ? data["opening_hours"].open_now.toString() : "Undetermined"}<br/>
                                     price_level: {data["price_level"] ? data["price_level"] : "nothing" }<br/>
                                     vicinity: {data["vicinity"]}
                                 </Typography>
                             </CardContent>
                             <CardActions>
-                                <Button size="small">Share</Button>
-                                <Button size="small">Learn More</Button>
+                                <Button size="small"
+                                >More</Button>
                             </CardActions>
                         </Card>
                     </div>

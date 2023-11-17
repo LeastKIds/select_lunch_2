@@ -7,6 +7,8 @@ import Modal from 'react-modal';
 
 function App() {
 
+  const url = "https://87bc-126-44-208-85.ngrok-free.app"
+
   const client = axios.create({
     withCredentials: true,
     headers: {
@@ -74,6 +76,7 @@ function App() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalData, setModalData] = useState({});
 
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   Modal.setAppElement('#root');
 
@@ -91,8 +94,8 @@ function App() {
         // const response = await axios.get("http://leastkids@leastkids.iptime.org:8080/search/" + keyword);
         // const response = await axios.get("http://126.44.208.85:8080/search/" + keyword);
         // const response = await client.get("https://2901-126-44-208-85.ngrok-free.app/search/" + keyword);
-        const response = await client.post("https://8475-126-44-208-85.ngrok-free.app/search/" + keyword, {
-          lat: latitude, lng: longitude
+        const response = await client.post( url + "/search/" + keyword, {
+          lat: position.lat, lng: position.lng
         });
         const data = response.data;
         console.log(data);
@@ -106,30 +109,15 @@ function App() {
 
   }
 
-  const onMarkerDragEnd = (event) => {
-    // const lat = event.latLng.lat()
-    // const lng = event.latLng.lng()
-
-    // const newPos = {
-    //   lat: lat,
-    //   lng: lng
-    // };
-    // setPosition(newPos);
-
-    // setLatitude(lat);
-    // setLongitude(lng);
-    console.log(event);
-  };
-
   const handleOnLoad = map => {
     setMapRef(map);
   };
-  const handleCenterChanged = () => {
-    if (mapref) {
-      const newCenter = mapref.getCenter();
-      console.log(newCenter);
-    }
-  };
+  const handleReview = async (place_id) => {
+    const response = await client.get(url + "/search/reviews/" + place_id);
+    console.log(response);
+
+    setReviewOpen(true);
+  }
 
   
 
@@ -200,12 +188,16 @@ function App() {
                     <MarkerF 
                       position={{lat: data["geometry"]["location"]["lat"], lng: data["geometry"]["location"]["lng"]}}
                       draggable={false}
-                      onClick={() => {
-                        setModalData(data);
+                      onClick={async () => {
+                        const response = await client.get(url + "/search/reviews/" + data.place_id)
+                        console.log("in modal");
+                        console.log(response);
 
+                        setModalData(data);
                         setModalIsOpen(true);
                       
                       }}
+                      key={index}
                     />
                   )
                 }
@@ -243,6 +235,46 @@ function App() {
         }}
       >
         <h1>name: {modalData.name}</h1>
+        {
+          modalData.photos &&
+          <>
+            {
+              modalData.photos.map( (photo, index) =>
+              <div key={index}>
+                <img  src={`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photo.photo_reference}&key=${googleApi}`} />
+                {
+                  photo.html_attributions && 
+                  <>
+                    {
+                      photo.html_attributions.map( (link, linkIndex) => 
+                      <div key={linkIndex} dangerouslySetInnerHTML={{__html: link}}></div>
+                    )
+                    }
+                  </>
+                }
+              </div>
+              )
+            }
+          </>
+        }
+        <p>vicinity: {modalData.vicinity}</p>
+        <p>open_now: {modalData["opening_hours"] && modalData["opening_hours"].open_now !== null ? modalData["opening_hours"].open_now.toString() : "Undetermined" }</p>
+        <p>price_level: {modalData.price_level == null ? "immeasurable" : modalData.price_level}</p>
+        <p>types: {modalData.types ? modalData.types.join(', ') : "No types available"}</p>
+        <p>user_ratings_total: {modalData.user_ratings_total}</p>
+        <p>place_id: {modalData.place_id}</p>
+
+        <button onClick={() => handleReview(modalData.place_id)}>review open</button>
+
+        {
+          reviewOpen && 
+          <div>
+            <p>review</p>
+
+            <button onClick={() => setReviewOpen(false)}>review close</button>
+          </div>
+        }
+
         <button onClick={()=> setModalIsOpen(false)}>Modal Close</button>
       </Modal>
 

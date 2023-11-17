@@ -5,4 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public interface LunchService {
     SearchResponse searchOfCurrentLocation(String keyward, double lat, double lng);
+
+    void searchReviewsOfPlaceId(String place_id);
 }
