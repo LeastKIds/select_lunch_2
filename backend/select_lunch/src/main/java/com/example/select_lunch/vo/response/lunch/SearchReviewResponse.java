@@ -2,6 +2,8 @@ package com.example.select_lunch.vo.response.lunch;
 
 import java.util.ArrayList;
 
+import com.example.select_lunch.e.lunch.ReviewEvaluationEnum;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,6 +27,7 @@ public class SearchReviewResponse {
         private Integer price_level;
         private Integer rating;
         private ArrayList<Review> reviews;
+        private ReviewEvaluationEnum ReviewEvaluation;
         private Boolean takeout;
         private ArrayList<String> types;
         private String url;

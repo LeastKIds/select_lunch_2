@@ -17,6 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.example.select_lunch.service.lunch.LunchService;
 import com.example.select_lunch.vo.request.SearchOfCurrentLocationRequest;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
+import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -30,11 +31,12 @@ public class LunchController {
     private final LunchService lunchService;
 
     @GetMapping("/search/reviews/{place_id}")
-    public ResponseEntity<String> searchReviewsOfPlaceId(@PathVariable String place_id) {
-        lunchService.searchReviewsOfPlaceId(place_id);
-
-
-        return ResponseEntity.status(HttpStatus.OK).body("PASS");
+    public ResponseEntity<SearchReviewResponse> searchReviewsOfPlaceId(@PathVariable String place_id) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(
+                    lunchService.searchReviewsOfPlaceId(place_id)
+                );
     }
 
 

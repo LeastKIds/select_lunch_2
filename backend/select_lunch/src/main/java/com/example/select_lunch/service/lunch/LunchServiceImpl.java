@@ -7,8 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.example.select_lunch.e.lunch.ReviewEvaluationEnum;
+import com.example.select_lunch.util.stanfordCoreNLP.StanfordCoreNLPConfig;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
+import com.example.select_lunch.vo.response.lunch.SearchReviewResponse.SearchReviewResult;
+import com.example.select_lunch.vo.response.lunch.SearchReviewResponse.SearchReviewResult.Review;
 import com.example.select_lunch.vo.response.lunch.SearchResponse.Result;
 import com.example.select_lunch.vo.response.lunch.SearchResponse.Result.Photo;
 
@@ -44,7 +48,7 @@ public class LunchServiceImpl implements LunchService{
     }
 
     @Override
-    public void searchReviewsOfPlaceId(String place_id) {
+    public SearchReviewResponse searchReviewsOfPlaceId(String place_id) {
         String baseUrl = "https://maps.googleapis.com/maps/api/place/details/json";
         String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
                     .queryParam("place_id", place_id)
@@ -54,7 +58,27 @@ public class LunchServiceImpl implements LunchService{
                     .toUriString();
 
         SearchReviewResponse searchReviewResponse = restTemplate.getForObject(url, SearchReviewResponse.class);
-        
+        SearchReviewResult searchReviewResult = searchReviewResponse.getResult();
+        ArrayList<Review> reviews = searchReviewResult.getReviews();
+
+        int reviewsCount = reviews.size();
+        if(reviewsCount != 0) {
+            double reviewsSum = 0;
+            for(int i = 0; i < reviewsCount; i++) {
+                reviewsSum += StanfordCoreNLPConfig.analyzeOverallSentiment(reviews.get(i).getText());
+            }
+            double reviewsResult = reviewsSum / reviewsCount;
+            if(reviewsResult > 2) 
+                searchReviewResult.setReviewEvaluation(ReviewEvaluationEnum.POSITIVE);
+            else if(reviewsResult < 2) 
+                searchReviewResult.setReviewEvaluation(ReviewEvaluationEnum.NEGATIVE);
+            else
+                searchReviewResult.setReviewEvaluation(ReviewEvaluationEnum.NEUTRAL);
+        }
+
+
+        searchReviewResponse.setResult(searchReviewResult);
+        return searchReviewResponse;
         
 
     }
