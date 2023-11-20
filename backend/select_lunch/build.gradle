@@ -31,11 +31,14 @@ dependencies {
 
 	// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
-
 	// https://mvnrepository.com/artifact/org.modelmapper/modelmapper
 	implementation 'org.modelmapper:modelmapper:3.2.0'
 
 
+	implementation 'edu.stanford.nlp:stanford-corenlp:4.4.0'
+
+    // Stanford CoreNLP 모델
+    implementation 'edu.stanford.nlp:stanford-corenlp:4.4.0:models'
 }
 
 tasks.named('test') {

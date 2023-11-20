@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.example.select_lunch.vo.response.SearchReviewResponse;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
+import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
 import com.example.select_lunch.vo.response.lunch.SearchResponse.Result;
 import com.example.select_lunch.vo.response.lunch.SearchResponse.Result.Photo;
 
@@ -40,11 +40,7 @@ public class LunchServiceImpl implements LunchService{
                     .encode()
                     .toUriString();
 
-        SearchResponse response = restTemplate.getForObject(url,SearchResponse.class);
-        
-        // System.out.println(restTemplate.getForObject(url,String.class));
-
-        return response;
+        return restTemplate.getForObject(url,SearchResponse.class);
     }
 
     @Override

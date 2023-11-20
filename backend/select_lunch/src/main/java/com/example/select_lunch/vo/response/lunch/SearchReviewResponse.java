@@ -1,4 +1,4 @@
-package com.example.select_lunch.vo.response;
+package com.example.select_lunch.vo.response.lunch;
 
 import java.util.ArrayList;
 
