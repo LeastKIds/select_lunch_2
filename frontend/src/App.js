@@ -4,6 +4,9 @@ import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
 import RestaurantBoxComponent from "./component/RestaurantBoxComponent";
 import Modal from 'react-modal';
 
+import tomatoImg from './img/tomato.jpg'
+import decayTomatoImg from './img/decay_tomato.png'
+import greenTomato from './img/green_tomato.png'
 
 function App() {
 
@@ -190,10 +193,9 @@ function App() {
                       draggable={false}
                       onClick={async () => {
                         const response = await client.get(url + "/search/reviews/" + data.place_id)
-                        console.log("in modal");
                         console.log(response);
 
-                        setModalData(data);
+                        setModalData(response.data.result);
                         setModalIsOpen(true);
                       
                       }}
@@ -235,42 +237,46 @@ function App() {
         }}
       >
         <h1>name: {modalData.name}</h1>
+        <p>current open: {modalData.current_opening_hours?.open_now !== null ? modalData.current_opening_hours?.open_now.toString() : "ignorance"}</p>
         {
-          modalData.photos &&
+          modalData.current_opening_hours?.weekday_text &&
           <>
             {
-              modalData.photos.map( (photo, index) =>
-              <div key={index}>
-                <img  src={`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photo.photo_reference}&key=${googleApi}`} />
-                {
-                  photo.html_attributions && 
-                  <>
-                    {
-                      photo.html_attributions.map( (link, linkIndex) => 
-                      <div key={linkIndex} dangerouslySetInnerHTML={{__html: link}}></div>
-                    )
-                    }
-                  </>
-                }
-              </div>
+              modalData.current_opening_hours.weekday_text.map( (date, index) => 
+                <p key={index}>{date}</p>
               )
             }
           </>
         }
-        <p>vicinity: {modalData.vicinity}</p>
-        <p>open_now: {modalData["opening_hours"] && modalData["opening_hours"].open_now !== null ? modalData["opening_hours"].open_now.toString() : "Undetermined" }</p>
-        <p>price_level: {modalData.price_level == null ? "immeasurable" : modalData.price_level}</p>
-        <p>types: {modalData.types ? modalData.types.join(', ') : "No types available"}</p>
-        <p>user_ratings_total: {modalData.user_ratings_total}</p>
-        <p>place_id: {modalData.place_id}</p>
+        <p>address: {modalData.formatted_address}</p>
+        <p>telephone: {modalData.formatted_phone_number}</p>
+        <p>delivery: {modalData.delivery ? modalData.delivery.toString() : 'ignorance'}</p>
+        <p>takeout: {modalData.takeout ? modalData.takeout.toString() : 'ignorance'}</p>
+        <p>price_level: {modalData.price_level}</p>
+        <p>map: {modalData.url}</p>
+        <p>website: {modalData.website}</p>
 
+        <p>hashtag: {modalData.types ? modalData.types.join(', ') : 'ignorance'}</p>
         <button onClick={() => handleReview(modalData.place_id)}>review open</button>
 
         {
           reviewOpen && 
           <div>
-            <p>review</p>
+            <img src={
+              modalData.reviewEvaluation === "POSITIVE" ? tomatoImg :
+              modalData.reviewEvaluation === "NEGATIVE" ? decayTomatoImg : greenTomato 
+              } style={{width: "100px"}}/>
 
+            {
+              modalData.reviews.map( (review, index) => 
+              <div key={index}>
+                <h3>{review.author_name}</h3>
+                <p>{review.text}</p>
+                <p>{review.relative_time_description}</p>
+                <p>url: {review.author_url}</p>
+              </div>
+              )
+            }
             <button onClick={() => setReviewOpen(false)}>review close</button>
           </div>
         }
@@ -278,6 +284,10 @@ function App() {
         <button onClick={()=> setModalIsOpen(false)}>Modal Close</button>
       </Modal>
 
+
+      <div style={{textAlign: "center"}}>
+        <p>tomato: <a href="https://kr.freepik.com/free-vector/sticker-design-with-tomato-isolated_16460149.htm#query=tomato&position=2&from_view=keyword&track=sph&uuid=438d58b3-3343-43fb-997f-9b8a7a818a29">작가 brgfx</a> 출처 Freepik</p>
+      </div>
     </div>
   );
 }
