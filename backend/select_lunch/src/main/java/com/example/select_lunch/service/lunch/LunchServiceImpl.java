@@ -60,6 +60,7 @@ public class LunchServiceImpl implements LunchService{
                     .encode()
                     .toUriString();
 
+        System.out.println(restTemplate.getForObject(url, String.class));
         SearchReviewResponse searchReviewResponse = restTemplate.getForObject(url, SearchReviewResponse.class);
         SearchReviewResult searchReviewResult = searchReviewResponse.getResult();
         ArrayList<Review> reviews = searchReviewResult.getReviews();

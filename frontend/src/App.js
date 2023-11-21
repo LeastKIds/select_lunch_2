@@ -4,13 +4,15 @@ import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
 import RestaurantBoxComponent from "./component/RestaurantBoxComponent";
 import Modal from 'react-modal';
 
+import CustomMap from './component/map/CustomMap'
+
 import tomatoImg from './img/tomato.jpg'
 import decayTomatoImg from './img/decay_tomato.png'
 import greenTomato from './img/green_tomato.png'
 
 function App() {
 
-  const url = "https://3ad4-126-44-208-85.ngrok-free.app"
+  const url = "https://9c0c-126-44-208-85.ngrok-free.app"
 
   const client = axios.create({
     withCredentials: true,
@@ -74,6 +76,9 @@ function App() {
   const [longitude, setLongitude] = useState(139.65002534640476);
 
   const [position, setPosition] = useState({lat: latitude, lng: longitude});
+  const handleSetPosition = (newPosition) => {
+    setPosition(newPosition)
+  } 
 
   const [mapref, setMapRef] = useState(null)
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -112,10 +117,6 @@ function App() {
 
 
   }
-
-  const handleOnLoad = map => {
-    setMapRef(map);
-  };
   const handleReview = async (place_id) => {
     const response = await client.get(url + "/search/reviews/" + place_id);
     console.log(response);
@@ -166,52 +167,21 @@ function App() {
 
       </div>
 
-      <div style={mapStyle}>
-        <LoadScript
-        googleMapsApiKey={googleApi}
-      >
-        <GoogleMap
-          mapContainerStyle={containerStyle2}
-          center={position}
-          zoom={13}
-          options={{disableDefaultUI: true, styles: markerStyle}}
-          onClick={(e) => {setPosition({lat: e.latLng.lat(), lng: e.latLng.lng()})}}
-
-          onLoad={handleOnLoad}
-          
-          
-        >
-          <>
-            {
-           
-              (restaurants && restaurants["results"]) && 
-              <>
-                {
-                  restaurants["results"].map((data, index) => 
-                  
-                    <MarkerF 
-                      position={{lat: data["geometry"]["location"]["lat"], lng: data["geometry"]["location"]["lng"]}}
-                      draggable={false}
-                      onClick={async () => {
-                        const response = await client.get(url + "/search/reviews/" + data.place_id)
-                        console.log(response);
-
-                        setModalData(response.data.result);
-                        setModalIsOpen(true);
-                      
-                      }}
-                      key={index}
-                    />
-                  )
-                }
-              </>
-            }
-
-            
-          </>
-        </GoogleMap>
-      </LoadScript>
+      
+      <div>
+        <CustomMap handleSetPosition={handleSetPosition} position={position} restaurants={restaurants}/>
       </div>
+
+
+      <div style={{display: "flex", justifyContent: "Center", marginTop: "20px"}}>
+        <button>
+          next
+        </button>
+      </div>
+
+
+      
+     
 
       <div>
         {
@@ -257,7 +227,7 @@ function App() {
         <p>map: {modalData.url}</p>
         <p>website: {modalData.website}</p>
 
-        <p>hashtag: {modalData.types ? modalData.types.join(', ') : 'ignorance'}</p>
+        <p>keyward: {modalData.types ? modalData.types.join(', ') : 'ignorance'}</p>
         <button onClick={() => handleReview(modalData.place_id)}>review open</button>
         {
           reviewOpen && 
