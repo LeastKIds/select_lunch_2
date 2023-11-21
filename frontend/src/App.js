@@ -82,7 +82,13 @@ function App() {
 
   const [mapref, setMapRef] = useState(null)
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const handleModalIsOpen = (newModalIsOpen) => {
+    setModalIsOpen(newModalIsOpen);
+  } 
   const [modalData, setModalData] = useState({});
+  const handleSetModalData = (newModalData) => {
+    setModalData(newModalData);
+  }
 
   const [reviewOpen, setReviewOpen] = useState(false);
 
@@ -169,7 +175,14 @@ function App() {
 
       
       <div>
-        <CustomMap handleSetPosition={handleSetPosition} position={position} restaurants={restaurants}/>
+        <CustomMap 
+          handleSetPosition={handleSetPosition} 
+          position={position} restaurants={restaurants} 
+          handleSetModalData={handleSetModalData} 
+          handleModalIsOpen={handleModalIsOpen}
+          url={url}
+          client={client}
+          />
       </div>
 
 

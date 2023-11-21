@@ -10,13 +10,13 @@ import { Point } from 'ol/geom';
 import { Feature } from 'ol';
 import { Style, Icon } from 'ol/style';
 
-const CustomMap = ({position, handleSetPosition, restaurants}) => {
+const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModalIsOpen, restaurants, client, url}) => {
   const mapRef = useRef();
   const [map, setMap] = useState();
 
+  const [markers, setMarkers] = useState([]);
+
   useEffect(() => {
-    console.log('lat:' + position.lat);
-    console.log('lng: ' + position.lng);
     // 지도 초기화
     const initialMap = new Map({
       target: mapRef.current,
@@ -27,36 +27,100 @@ const CustomMap = ({position, handleSetPosition, restaurants}) => {
       ],
       view: new View({
         center: fromLonLat([position.lng, position.lat]),
-        zoom: 18,
+        zoom: 16,
       }),
     });
 
-    setMap(initialMap);
+    const vectorSource = new VectorSource();
 
-    return () => initialMap.setTarget(undefined);
-  }, [position]);
+    const currentMarker = new Feature({
+      geometry: new Point(fromLonLat([position.lng, position.lat]))
+    });
 
-  useEffect(() => {
-    if (!map) return;
+    currentMarker.setStyle(new Style({
+      image: new Icon({
+        src: 'https://openlayers.org/en/latest/examples/data/icon.png'
+      })
+    }));
+
+    vectorSource.addFeature(currentMarker);
+
+    const markersArray = []
+
+    if(restaurants !== null &&restaurants !== undefined && restaurants.results !== null &&restaurants.results !== undefined && restaurants.results && restaurants.results.length !== 0) {
+        const results = restaurants.results;
+        results.forEach( (result, index) => {
+
+          const marker = new Feature({
+            geometry: new Point(fromLonLat([result.geometry.location.lng, result.geometry.location.lat]))
+          });
+
+          marker.setStyle(new Style({
+            image: new Icon({
+              src: 'https://openlayers.org/en/latest/examples/data/icon.png'
+            })
+          }));
+
+          vectorSource.addFeature(marker);
+          markersArray.push([marker, result]);
+        })
+    }
+
+    setMarkers(markersArray);
+
+    const vectorLayer = new VectorLayer({
+      source: vectorSource,
+    });
+
+    initialMap.addLayer(vectorLayer);
+
 
     // 클릭 이벤트 리스너 추가
     const handleClick = (event) => {
-      // 클릭한 지점의 좌표 추출
-      const coordinate = toLonLat(event.coordinate);
-      const [longitude, latitude] = coordinate;
-      console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
-      handleSetPosition({lat: latitude, lng: longitude});
-    };
+      let clickedOnFeature = false;
 
-    map.on('singleclick', handleClick);
 
-    return () => {
-      if (map) {
-        // 이벤트 리스너 제거
-        map.un('singleclick', handleClick);
+      initialMap.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
+        clickedOnFeature = true;
+        // 여기서 마커 클릭 처리 로직을 추가할 수 있습니다.
+        if(currentMarker === feature) {
+          console.log("현재 위치: ", feature);
+        } else {
+          markersArray.forEach(async clickMarker => {
+            if(clickMarker[0] === feature) {
+              const response = await client.get(url + '/search/reviews/' + clickMarker[1].place_id)
+              const result = response.data.result;
+              handleSetModalData(result);
+              handleModalIsOpen(true);
+            }
+          })
+        }
+      });
+    
+      
+
+      if (!clickedOnFeature) {
+        // 마커가 아닌 지도의 빈 공간 클릭 처리
+        const coordinate = toLonLat(event.coordinate);
+        const [longitude, latitude] = coordinate;
+        console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+        handleSetPosition({lat: latitude, lng: longitude});
       }
     };
-  }, [map, position]);
+
+    initialMap.on('singleclick', handleClick);
+    setMap(initialMap);
+
+    return () => {
+      initialMap.setTarget(undefined)
+      if (initialMap) {
+        // 이벤트 리스너 제거
+        initialMap.un('singleclick', handleClick);
+      }
+    };
+  }, [position, restaurants]);
+
+
 
 
   return <div ref={mapRef} style={{ width: '100%', height: '400px' }}></div>;
