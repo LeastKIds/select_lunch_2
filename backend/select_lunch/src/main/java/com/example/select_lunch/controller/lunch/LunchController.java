@@ -16,8 +16,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.select_lunch.service.lunch.LunchService;
 import com.example.select_lunch.vo.request.SearchOfCurrentLocationRequest;
+import com.example.select_lunch.vo.request.SearchReviewsTranslationRequest;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
+import com.example.select_lunch.vo.response.lunch.SearchReviewsTranslationResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -29,6 +31,20 @@ import lombok.AllArgsConstructor;
 public class LunchController {
 
     private final LunchService lunchService;
+
+    @PostMapping("/search/reviews/translation")
+    public ResponseEntity<SearchReviewsTranslationResponse> searchReviewsTranslation(@RequestBody SearchReviewsTranslationRequest searchReviewsTranslationRequest) {
+        return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(
+                        lunchService
+                            .searchReviewsTranslationResponse(
+                                searchReviewsTranslationRequest.getText()
+                            )
+                    );
+    }
+
+
 
     @GetMapping("/search/reviews/{place_id}")
     public ResponseEntity<SearchReviewResponse> searchReviewsOfPlaceId(@PathVariable String place_id) {

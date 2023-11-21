@@ -19,6 +19,10 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven {
+        name = "clojars.org"
+        url = uri("https://repo.clojars.org")
+    }
 }
 
 dependencies {
@@ -34,11 +38,13 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.modelmapper/modelmapper
 	implementation 'org.modelmapper:modelmapper:3.2.0'
 
-
+	// 영어 감정 분석 라이브러리
 	implementation 'edu.stanford.nlp:stanford-corenlp:4.4.0'
-
     // Stanford CoreNLP 모델
     implementation 'edu.stanford.nlp:stanford-corenlp:4.4.0:models'
+
+	// 번역기 라이브러리
+	implementation 'net.clojars.suuft:libretranslate-java:1.0.5'
 }
 
 tasks.named('test') {

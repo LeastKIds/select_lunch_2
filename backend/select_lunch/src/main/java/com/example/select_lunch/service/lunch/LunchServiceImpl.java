@@ -13,11 +13,14 @@ import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse.SearchReviewResult;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse.SearchReviewResult.Review;
+import com.example.select_lunch.vo.response.lunch.SearchReviewsTranslationResponse;
 import com.example.select_lunch.vo.response.lunch.SearchResponse.Result;
 import com.example.select_lunch.vo.response.lunch.SearchResponse.Result.Photo;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.suuft.libretranslate.Language;
+import net.suuft.libretranslate.Translator;
 
 
 @Service
@@ -68,7 +71,7 @@ public class LunchServiceImpl implements LunchService{
                 reviewsSum += StanfordCoreNLPConfig.analyzeOverallSentiment(reviews.get(i).getText());
             }
             double reviewsResult = reviewsSum / reviewsCount;
-            if(reviewsResult > 2) 
+            if(reviewsResult > 2.5) 
                 searchReviewResult.setReviewEvaluation(ReviewEvaluationEnum.POSITIVE);
             else if(reviewsResult < 2) 
                 searchReviewResult.setReviewEvaluation(ReviewEvaluationEnum.NEGATIVE);
@@ -81,6 +84,16 @@ public class LunchServiceImpl implements LunchService{
         return searchReviewResponse;
         
 
+    }
+
+
+    @Override
+    public SearchReviewsTranslationResponse searchReviewsTranslationResponse(String text) {
+        
+        return SearchReviewsTranslationResponse
+                    .builder()
+                    .translationText(Translator.translate(Language.ENGLISH, Language.JAPANESE, text))
+                    .build();
     }
     
 }

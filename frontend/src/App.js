@@ -81,6 +81,7 @@ function App() {
 
   const [reviewOpen, setReviewOpen] = useState(false);
 
+
   Modal.setAppElement('#root');
 
 
@@ -258,7 +259,6 @@ function App() {
 
         <p>hashtag: {modalData.types ? modalData.types.join(', ') : 'ignorance'}</p>
         <button onClick={() => handleReview(modalData.place_id)}>review open</button>
-
         {
           reviewOpen && 
           <div>
@@ -272,8 +272,25 @@ function App() {
               <div key={index}>
                 <h3>{review.author_name}</h3>
                 <p>{review.text}</p>
+                <button
+                  onClick={async () => {
+                    const response = await client.post(url + '/search/reviews/translation', {text: review.text})
+                    console.log(response.data.translationText);
+                    setModalData(prevObject => ({
+                      ...prevObject, 
+                      reviews: prevObject.reviews.map(item => item.text === review.text ? {...item, translationJp: response.data.translationText} : item)
+                    }))
+                  }}
+                >日本語で機械翻訳</button>
+                {
+                  review.translationJp &&
+                  <p>{review.translationJp}</p>
+                }
+
+
                 <p>{review.relative_time_description}</p>
                 <p>url: {review.author_url}</p>
+                
               </div>
               )
             }
