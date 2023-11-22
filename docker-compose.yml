@@ -23,6 +23,17 @@ services:
     container_name: reactSelectLunch
     command: sleep infinity
 
+  mongoDb:
+    image: mongo
+    restart: always
+    volumes:
+      - ./DB/mongoDB:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    networks:
+      - our_net
+
 networks:
   our_net:
     driver: bridge

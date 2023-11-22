@@ -39,6 +39,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
 
     currentMarker.setStyle(new Style({
       image: new Icon({
+        color: 'rgba(255, 0, 0, .5)',
         src: 'https://openlayers.org/en/latest/examples/data/icon.png'
       })
     }));
@@ -57,6 +58,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
 
           marker.setStyle(new Style({
             image: new Icon({
+              
               src: 'https://openlayers.org/en/latest/examples/data/icon.png'
             })
           }));
@@ -90,6 +92,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
             if(clickMarker[0] === feature) {
               const response = await client.get(url + '/search/reviews/' + clickMarker[1].place_id)
               const result = response.data.result;
+              console.log(result);
               handleSetModalData(result);
               handleModalIsOpen(true);
             }

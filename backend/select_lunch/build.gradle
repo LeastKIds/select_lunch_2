@@ -45,6 +45,18 @@ dependencies {
 
 	// 번역기 라이브러리
 	implementation 'net.clojars.suuft:libretranslate-java:1.0.5'
+
+	// // mysql database connection
+	// implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// implementation 'mysql:mysql-connector-java'
+
+	// // database controller tool
+	// implementation 'org.flywaydb:flyway-core'
+
+	// mongo DB
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-mongodb
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
 }
 
 tasks.named('test') {

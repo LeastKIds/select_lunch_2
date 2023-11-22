@@ -2,20 +2,26 @@ package com.example.select_lunch.service.lunch;
 
 import java.util.ArrayList;
 
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.select_lunch.e.lunch.ReviewEvaluationEnum;
+import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity;
+import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity.RestaurantsResult;
+import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity.RestaurantsResult.RestaurantsResultReview;
+import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsRepository;
 import com.example.select_lunch.util.stanfordCoreNLP.StanfordCoreNLPConfig;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse.SearchReviewResult;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse.SearchReviewResult.Review;
 import com.example.select_lunch.vo.response.lunch.SearchReviewsTranslationResponse;
-import com.example.select_lunch.vo.response.lunch.SearchResponse.Result;
-import com.example.select_lunch.vo.response.lunch.SearchResponse.Result.Photo;
+
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +36,8 @@ public class LunchServiceImpl implements LunchService{
 
     private final Environment env;
     private final RestTemplate restTemplate;
+    private final RestaurantsRepository restaurantsRepository;
+
 
     @Override
     public SearchResponse searchOfCurrentLocation(String keyward, double lat, double lng) {
@@ -60,31 +68,53 @@ public class LunchServiceImpl implements LunchService{
                     .encode()
                     .toUriString();
 
-        System.out.println(restTemplate.getForObject(url, String.class));
-        SearchReviewResponse searchReviewResponse = restTemplate.getForObject(url, SearchReviewResponse.class);
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+        RestaurantsEntity restaurantsEntity = restTemplate.getForObject(url, RestaurantsEntity.class);
+        RestaurantsResult restaurantsResult = restaurantsEntity.getResult();
+        restaurantsResult.setPlaceId(place_id);
+        ArrayList<RestaurantsResultReview> restaurantsResultReviews = restaurantsResult.getReviews();
+       
+        SearchReviewResponse searchReviewResponse = mapper.map(restaurantsEntity, SearchReviewResponse.class);
         SearchReviewResult searchReviewResult = searchReviewResponse.getResult();
+        searchReviewResult.setPlace_id(place_id);
         ArrayList<Review> reviews = searchReviewResult.getReviews();
 
         int reviewsCount = reviews.size();
         if(reviewsCount != 0) {
             double reviewsSum = 0;
             for(int i = 0; i < reviewsCount; i++) {
-                reviewsSum += StanfordCoreNLPConfig.analyzeOverallSentiment(reviews.get(i).getText());
+                double point = StanfordCoreNLPConfig.analyzeOverallSentiment(reviews.get(i).getText());
+                reviewsSum += point;
+                restaurantsResultReviews.get(i).setEvaluationPoint(point);
+                if(point > 2.5)
+                    restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.POSITIVE);
+                else if (point < 2)
+                    restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.NEGATIVE);
+                else 
+                    restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.NEUTRAL);
             }
             double reviewsResult = reviewsSum / reviewsCount;
+            restaurantsResult.setReviewEvaluationPoint(reviewsResult);
+
+            ReviewEvaluationEnum reviewEvaluationEnum;
             if(reviewsResult > 2.5) 
-                searchReviewResult.setReviewEvaluation(ReviewEvaluationEnum.POSITIVE);
+                reviewEvaluationEnum = ReviewEvaluationEnum.POSITIVE;
             else if(reviewsResult < 2) 
-                searchReviewResult.setReviewEvaluation(ReviewEvaluationEnum.NEGATIVE);
+                reviewEvaluationEnum = ReviewEvaluationEnum.NEGATIVE;
             else
-                searchReviewResult.setReviewEvaluation(ReviewEvaluationEnum.NEUTRAL);
+                reviewEvaluationEnum = ReviewEvaluationEnum.NEUTRAL;
+            
+            restaurantsResult.setReviewEvaluation(reviewEvaluationEnum);
+            searchReviewResult.setReviewEvaluation(reviewEvaluationEnum);
         }
 
 
-        searchReviewResponse.setResult(searchReviewResult);
-        return searchReviewResponse;
-        
+        restaurantsEntity.setResult(restaurantsResult);
+        restaurantsRepository.save(restaurantsEntity);
 
+        return mapper.map(restaurantsEntity, SearchReviewResponse.class);
     }
 
 

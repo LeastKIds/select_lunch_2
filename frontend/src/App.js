@@ -12,7 +12,7 @@ import greenTomato from './img/green_tomato.png'
 
 function App() {
 
-  const url = "https://9c0c-126-44-208-85.ngrok-free.app"
+  const url = "https://f160-126-44-208-85.ngrok-free.app"
 
   const client = axios.create({
     withCredentials: true,
@@ -122,12 +122,6 @@ function App() {
     })();
 
 
-  }
-  const handleReview = async (place_id) => {
-    const response = await client.get(url + "/search/reviews/" + place_id);
-    console.log(response);
-
-    setReviewOpen(true);
   }
 
   
@@ -241,7 +235,7 @@ function App() {
         <p>website: {modalData.website}</p>
 
         <p>keyward: {modalData.types ? modalData.types.join(', ') : 'ignorance'}</p>
-        <button onClick={() => handleReview(modalData.place_id)}>review open</button>
+        <button onClick={() => setReviewOpen(true)}>review open</button>
         {
           reviewOpen && 
           <div>
