@@ -176,6 +176,7 @@ function App() {
           handleModalIsOpen={handleModalIsOpen}
           url={url}
           client={client}
+          keyword={keyword}
           />
       </div>
 

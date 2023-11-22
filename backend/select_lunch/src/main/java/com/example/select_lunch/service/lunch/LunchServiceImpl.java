@@ -62,7 +62,7 @@ public class LunchServiceImpl implements LunchService{
     }
 
     @Override
-    public SearchReviewResponse searchReviewsOfPlaceId(String place_id) {
+    public SearchReviewResponse searchReviewsOfPlaceId(String place_id, String keyword) {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
@@ -74,15 +74,16 @@ public class LunchServiceImpl implements LunchService{
             if(ChronoUnit.DAYS.between(LocalDate.now(), restaurantsEntity.getUpdateTime()) >= 1) {
                 log.info("하루 지난 옛날 데이터");
                 restaurantsRepository.delete(restaurantsEntity);
-                return mapper.map(searchGooglePlaceIdApi(place_id), SearchReviewResponse.class);
+                return mapper.map(searchGooglePlaceIdApi(place_id, keyword), SearchReviewResponse.class);
             } else {
                 log.info("하루가 지나지 않은 신선한 데이터");
+                System.out.println(restaurantsEntity.toString());
                 return mapper.map(restaurantsEntity, SearchReviewResponse.class);
             }
 
         } else {
             log.info("새로운 데이터");
-            SearchReviewResponse searchReviewResponse = mapper.map(searchGooglePlaceIdApi(place_id), SearchReviewResponse.class);
+            SearchReviewResponse searchReviewResponse = mapper.map(searchGooglePlaceIdApi(place_id, keyword), SearchReviewResponse.class);
             searchReviewResponse.getResult().setPlace_id(place_id);
             return searchReviewResponse;
         }
@@ -92,7 +93,7 @@ public class LunchServiceImpl implements LunchService{
     }
 
 
-    private RestaurantsEntity searchGooglePlaceIdApi(String place_id) {
+    private RestaurantsEntity searchGooglePlaceIdApi(String place_id, String keyword) {
         String baseUrl = "https://maps.googleapis.com/maps/api/place/details/json";
             String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
                         .queryParam("place_id", place_id)
@@ -105,6 +106,11 @@ public class LunchServiceImpl implements LunchService{
             RestaurantsResult restaurantsResult = restaurantsEntity.getResult();
             restaurantsResult.setPlaceId(place_id);
             restaurantsEntity.setUpdateTime(LocalDate.now());
+            ArrayList<String> keywords = restaurantsEntity.getKeywords();
+            if(keywords == null)
+                keywords = new ArrayList<String>();
+            keywords.add(keyword);
+            restaurantsEntity.setKeywords(keywords);
             ArrayList<RestaurantsResultReview> restaurantsResultReviews = restaurantsResult.getReviews();
         
             int reviewsCount = restaurantsResultReviews.size();

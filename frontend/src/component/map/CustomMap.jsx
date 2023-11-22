@@ -10,7 +10,7 @@ import { Point } from 'ol/geom';
 import { Feature } from 'ol';
 import { Style, Icon } from 'ol/style';
 
-const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModalIsOpen, restaurants, client, url}) => {
+const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModalIsOpen, restaurants, client, url, keyword}) => {
   const mapRef = useRef();
   const [map, setMap] = useState();
 
@@ -90,7 +90,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
         } else {
           markersArray.forEach(async clickMarker => {
             if(clickMarker[0] === feature) {
-              const response = await client.get(url + '/search/reviews/' + clickMarker[1].place_id)
+              const response = await client.post(url + '/search/place', {place_id: clickMarker[1].place_id, keyword: keyword})
               const result = response.data.result;
               console.log(result);
               handleSetModalData(result);
