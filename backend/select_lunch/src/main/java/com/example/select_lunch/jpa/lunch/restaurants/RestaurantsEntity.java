@@ -1,5 +1,6 @@
 package com.example.select_lunch.jpa.lunch.restaurants;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 import org.springframework.data.annotation.Id;
@@ -24,6 +25,7 @@ public class RestaurantsEntity {
     private ArrayList<String> html_attributions;
     private RestaurantsResult result;
     private String status;
+    private LocalDate updateTime;
 
     @Data
     @Builder

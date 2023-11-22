@@ -1,6 +1,9 @@
 package com.example.select_lunch.service.lunch;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -60,61 +63,82 @@ public class LunchServiceImpl implements LunchService{
 
     @Override
     public SearchReviewResponse searchReviewsOfPlaceId(String place_id) {
-        String baseUrl = "https://maps.googleapis.com/maps/api/place/details/json";
-        String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
-                    .queryParam("place_id", place_id)
-                    .queryParam("language", "en") // 결과를 한국어로 받기 위해 추가
-                    .queryParam("key", env.getProperty("google.places.api_key"))
-                    .encode()
-                    .toUriString();
-
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-        RestaurantsEntity restaurantsEntity = restTemplate.getForObject(url, RestaurantsEntity.class);
-        RestaurantsResult restaurantsResult = restaurantsEntity.getResult();
-        restaurantsResult.setPlaceId(place_id);
-        ArrayList<RestaurantsResultReview> restaurantsResultReviews = restaurantsResult.getReviews();
-       
-        SearchReviewResponse searchReviewResponse = mapper.map(restaurantsEntity, SearchReviewResponse.class);
-        SearchReviewResult searchReviewResult = searchReviewResponse.getResult();
-        searchReviewResult.setPlace_id(place_id);
-        ArrayList<Review> reviews = searchReviewResult.getReviews();
+        Optional<RestaurantsEntity> searchDatabaseRestaurantsEntity = restaurantsRepository.findByResultPlaceId(place_id);
+        if(searchDatabaseRestaurantsEntity.isPresent()) {
+            log.info("중복 값 존재");
+            RestaurantsEntity restaurantsEntity = searchDatabaseRestaurantsEntity.get();
 
-        int reviewsCount = reviews.size();
-        if(reviewsCount != 0) {
-            double reviewsSum = 0;
-            for(int i = 0; i < reviewsCount; i++) {
-                double point = StanfordCoreNLPConfig.analyzeOverallSentiment(reviews.get(i).getText());
-                reviewsSum += point;
-                restaurantsResultReviews.get(i).setEvaluationPoint(point);
-                if(point > 2.5)
-                    restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.POSITIVE);
-                else if (point < 2)
-                    restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.NEGATIVE);
-                else 
-                    restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.NEUTRAL);
+            if(ChronoUnit.DAYS.between(LocalDate.now(), restaurantsEntity.getUpdateTime()) >= 1) {
+                log.info("하루 지난 옛날 데이터");
+                restaurantsRepository.delete(restaurantsEntity);
+                return mapper.map(searchGooglePlaceIdApi(place_id), SearchReviewResponse.class);
+            } else {
+                log.info("하루가 지나지 않은 신선한 데이터");
+                return mapper.map(restaurantsEntity, SearchReviewResponse.class);
             }
-            double reviewsResult = reviewsSum / reviewsCount;
-            restaurantsResult.setReviewEvaluationPoint(reviewsResult);
 
-            ReviewEvaluationEnum reviewEvaluationEnum;
-            if(reviewsResult > 2.5) 
-                reviewEvaluationEnum = ReviewEvaluationEnum.POSITIVE;
-            else if(reviewsResult < 2) 
-                reviewEvaluationEnum = ReviewEvaluationEnum.NEGATIVE;
-            else
-                reviewEvaluationEnum = ReviewEvaluationEnum.NEUTRAL;
-            
-            restaurantsResult.setReviewEvaluation(reviewEvaluationEnum);
-            searchReviewResult.setReviewEvaluation(reviewEvaluationEnum);
+        } else {
+            log.info("새로운 데이터");
+            SearchReviewResponse searchReviewResponse = mapper.map(searchGooglePlaceIdApi(place_id), SearchReviewResponse.class);
+            searchReviewResponse.getResult().setPlace_id(place_id);
+            return searchReviewResponse;
         }
 
 
-        restaurantsEntity.setResult(restaurantsResult);
-        restaurantsRepository.save(restaurantsEntity);
+        
+    }
 
-        return mapper.map(restaurantsEntity, SearchReviewResponse.class);
+
+    private RestaurantsEntity searchGooglePlaceIdApi(String place_id) {
+        String baseUrl = "https://maps.googleapis.com/maps/api/place/details/json";
+            String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                        .queryParam("place_id", place_id)
+                        .queryParam("language", "en") // 결과를 한국어로 받기 위해 추가
+                        .queryParam("key", env.getProperty("google.places.api_key"))
+                        .encode()
+                        .toUriString();
+
+            RestaurantsEntity restaurantsEntity = restTemplate.getForObject(url, RestaurantsEntity.class);
+            RestaurantsResult restaurantsResult = restaurantsEntity.getResult();
+            restaurantsResult.setPlaceId(place_id);
+            restaurantsEntity.setUpdateTime(LocalDate.now());
+            ArrayList<RestaurantsResultReview> restaurantsResultReviews = restaurantsResult.getReviews();
+        
+            int reviewsCount = restaurantsResultReviews.size();
+            if(reviewsCount != 0) {
+                double reviewsSum = 0;
+                for(int i = 0; i < reviewsCount; i++) {
+                    double point = StanfordCoreNLPConfig.analyzeOverallSentiment(restaurantsResultReviews.get(i).getText());
+                    reviewsSum += point;
+                    restaurantsResultReviews.get(i).setEvaluationPoint(point);
+                    if(point > 2.5)
+                        restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.POSITIVE);
+                    else if (point < 2)
+                        restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.NEGATIVE);
+                    else 
+                        restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.NEUTRAL);
+                }
+                double reviewsResult = reviewsSum / reviewsCount;
+                restaurantsResult.setReviewEvaluationPoint(reviewsResult);
+
+                ReviewEvaluationEnum reviewEvaluationEnum;
+                if(reviewsResult > 2.5) 
+                    reviewEvaluationEnum = ReviewEvaluationEnum.POSITIVE;
+                else if(reviewsResult < 2) 
+                    reviewEvaluationEnum = ReviewEvaluationEnum.NEGATIVE;
+                else
+                    reviewEvaluationEnum = ReviewEvaluationEnum.NEUTRAL;
+                
+                restaurantsResult.setReviewEvaluation(reviewEvaluationEnum);
+            }
+
+            restaurantsEntity.setResult(restaurantsResult);
+            restaurantsRepository.save(restaurantsEntity);
+            log.info("데이터 저장");
+            return restaurantsEntity;
     }
 
 
