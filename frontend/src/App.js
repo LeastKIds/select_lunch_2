@@ -141,6 +141,10 @@ function App() {
     })();
   }
 
+  const handleInitAddress = () => {
+    setPosition({lat: 35.6667076, lng: 139.7143023})
+  }
+
   
 
   useEffect(() => {
@@ -171,6 +175,7 @@ function App() {
       <div>
         <input type="text" style={inputStyle} placeholder="여기에 입력하세요" value={address} onChange={handleAddressInputChange} />
         <button style={buttonStyle} onClick={handleGeocoding}>주소</button>
+        <button style={buttonStyle} onClick={handleInitAddress}>초기값</button>
       </div>
       <div style={containerStyle}>
         <input type="text" style={inputStyle} placeholder="여기에 입력하세요" value={keyword} onChange={handleInputChange} />
