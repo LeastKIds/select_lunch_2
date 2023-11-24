@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity;
 import com.example.select_lunch.service.lunch.LunchService;
 import com.example.select_lunch.vo.request.SearchOfCurrentLocationRequest;
 import com.example.select_lunch.vo.request.SearchPlaceRequest;
@@ -85,7 +86,7 @@ public class LunchController {
     
 
 
-
+    
 
 
 
