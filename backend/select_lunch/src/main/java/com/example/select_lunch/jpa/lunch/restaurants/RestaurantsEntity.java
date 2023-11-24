@@ -26,7 +26,7 @@ public class RestaurantsEntity {
     private RestaurantsResult result;
     private String status;
     private LocalDate updateTime;
-    private ArrayList<String> keywords = new ArrayList<>();;
+    private ArrayList<String> keywords;
 
     @Data
     @Builder

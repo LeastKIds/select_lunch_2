@@ -76,19 +76,29 @@ public class LunchServiceImpl implements LunchService{
             log.info("중복 값 존재");
             RestaurantsEntity restaurantsEntity = searchDatabaseRestaurantsEntity.get();
 
+            ArrayList<String> prevKeywords = restaurantsEntity.getKeywords();
+            Boolean isKeywordChange = prevKeywords.contains(keyword);
+            if(!isKeywordChange) {
+                log.info("새로운 키워드 발견");
+                prevKeywords.add(keyword);
+            }
+
             if(ChronoUnit.DAYS.between(LocalDate.now(), restaurantsEntity.getUpdateTime()) >= 1) {
                 log.info("하루 지난 옛날 데이터");
                 restaurantsRepository.delete(restaurantsEntity);
-                return mapper.map(searchGooglePlaceIdApi(place_id, keyword), SearchReviewResponse.class);
+                return mapper.map(searchGooglePlaceIdApi(place_id, keyword, prevKeywords), SearchReviewResponse.class);
             } else {
                 log.info("하루가 지나지 않은 신선한 데이터");
-                System.out.println(restaurantsEntity.toString());
+                if(!isKeywordChange) {
+                    restaurantsEntity.setKeywords(prevKeywords);
+                    restaurantsRepository.save(restaurantsEntity);
+                }
                 return mapper.map(restaurantsEntity, SearchReviewResponse.class);
             }
 
         } else {
             log.info("새로운 데이터");
-            SearchReviewResponse searchReviewResponse = mapper.map(searchGooglePlaceIdApi(place_id, keyword), SearchReviewResponse.class);
+            SearchReviewResponse searchReviewResponse = mapper.map(searchGooglePlaceIdApi(place_id, keyword, null), SearchReviewResponse.class);
             searchReviewResponse.getResult().setPlace_id(place_id);
             return searchReviewResponse;
         }
@@ -98,7 +108,7 @@ public class LunchServiceImpl implements LunchService{
     }
 
 
-    private RestaurantsEntity searchGooglePlaceIdApi(String place_id, String keyword) {
+    private RestaurantsEntity searchGooglePlaceIdApi(String place_id, String keyword, ArrayList<String> prevKeywords) {
         String baseUrl = "https://maps.googleapis.com/maps/api/place/details/json";
         String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
                     .queryParam("place_id", place_id)
@@ -112,9 +122,12 @@ public class LunchServiceImpl implements LunchService{
         restaurantsResult.setPlaceId(place_id);
         restaurantsEntity.setUpdateTime(LocalDate.now());
         ArrayList<String> keywords = restaurantsEntity.getKeywords();
-        if(keywords == null)
+        if(prevKeywords == null) {
             keywords = new ArrayList<String>();
-        keywords.add(keyword);
+            keywords.add(keyword);
+        }       
+        else
+            keywords = prevKeywords;
         restaurantsEntity.setKeywords(keywords);
         ArrayList<RestaurantsResultReview> restaurantsResultReviews = restaurantsResult.getReviews();
     
@@ -164,19 +177,6 @@ public class LunchServiceImpl implements LunchService{
 
     @Override
     public SearchGeocodingResponse searchGeocoding(String address) {
-        System.out.println("Geocoding");
-        System.out.println("address: " + address);
-        // String baseUrl = "https://maps.googleapis.com/maps/api/geocode/json";
-
-        // String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
-        //         .queryParam("address", address)
-        //         .queryParam("key", env.getProperty("google.places.api_key"))
-        //         // .queryParam("language", "ko") // 결과를 한국어로 받기 위해 추가
-
-
-        //         .encode()
-        //         .toUriString();
-
         String baseUrl = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json";
 
         String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
@@ -186,12 +186,6 @@ public class LunchServiceImpl implements LunchService{
                 .queryParam("key", env.getProperty("google.places.api_key"))
                 .encode()
                 .toUriString();
-
-        // JsonElement responseElement = JsonParser.parseString(restTemplate.getForObject(url, String.class));
-        // JsonObject responseObject = responseElement.getAsJsonObject();
-        // JsonArray candidates = responseObject.get("candidates").getAsJsonArray();
-        // JsonObject location = candidates.get(0).getAsJsonObject().get("geometry").getAsJsonObject().get("location").getAsJsonObject();
-        // String response = restTemplate.getForObject(url, String.class);
 
         try {
             JsonObject location = JsonParser
@@ -208,8 +202,6 @@ public class LunchServiceImpl implements LunchService{
                                 .get("location")
                                 .getAsJsonObject();
 
-            
-        System.out.println("check");
 
             return SearchGeocodingResponse
                 .builder()
