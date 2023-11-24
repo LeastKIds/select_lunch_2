@@ -22,10 +22,6 @@ import com.example.select_lunch.util.stanfordCoreNLP.StanfordCoreNLPConfig;
 import com.example.select_lunch.vo.response.lunch.SearchGeocodingResponse;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
-import com.example.select_lunch.vo.response.lunch.SearchReviewResponse.SearchReviewResult;
-import com.example.select_lunch.vo.response.lunch.SearchReviewResponse.SearchReviewResult.Review;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.example.select_lunch.vo.response.lunch.SearchReviewsTranslationResponse;
@@ -48,22 +44,34 @@ public class LunchServiceImpl implements LunchService{
 
 
     @Override
-    public SearchResponse searchOfCurrentLocation(String keyward, double lat, double lng) {
+    public SearchResponse searchOfCurrentLocation(String keyward, double lat, double lng, String next_page_token) {
 
         String baseUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
-        String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
-                    .queryParam("keyword", keyward)
-                    .queryParam("location", String.valueOf(lat) + "," + String.valueOf(lng))
-                    .queryParam("radius", 500) // 단위는 미터
-                    // .queryParam("rankby", "prominence")
-                    .queryParam("type", "restaurant")
-                    .queryParam("language", "ko") // 검색 결과를 한국어로 받기 위해 추가
-                    .queryParam("key", env.getProperty("google.places.api_key"))
-                    
-                    .encode()
-                    .toUriString();
+        if(next_page_token == null) {
+           
+            String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                        .queryParam("keyword", keyward)
+                        .queryParam("location", String.valueOf(lat) + "," + String.valueOf(lng))
+                        .queryParam("radius", 500) // 단위는 미터
+                        // .queryParam("rankby", "prominence")
+                        .queryParam("type", "restaurant")
+                        .queryParam("language", "ko") // 검색 결과를 한국어로 받기 위해 추가
+                        .queryParam("key", env.getProperty("google.places.api_key"))
+                        
+                        .encode()
+                        .toUriString();
+            return restTemplate.getForObject(url,SearchResponse.class);
+        } else {
+            String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                        .queryParam("pagetoken", next_page_token)
+                        .queryParam("key", env.getProperty("google.places.api_key"))
+                        
+                        .encode()
+                        .toUriString();
 
-        return restTemplate.getForObject(url,SearchResponse.class);
+            return restTemplate.getForObject(url, SearchResponse.class);
+        }
+        
     }
 
     @Override

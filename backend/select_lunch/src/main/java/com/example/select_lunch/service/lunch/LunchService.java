@@ -6,7 +6,7 @@ import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewsTranslationResponse;
 
 public interface LunchService {
-    SearchResponse searchOfCurrentLocation(String keyward, double lat, double lng);
+    SearchResponse searchOfCurrentLocation(String keyward, double lat, double lng, String next_page_token);
 
     SearchReviewResponse searchReviewsOfPlaceId(String place_id, String keyword);
 

@@ -94,6 +94,7 @@ function App() {
   const [reviewOpen, setReviewOpen] = useState(false);
 
 
+
   Modal.setAppElement('#root');
 
 
@@ -115,7 +116,7 @@ function App() {
         // const response = await axios.get("http://126.44.208.85:8080/search/" + keyword);
         // const response = await client.get("https://2901-126-44-208-85.ngrok-free.app/search/" + keyword);
         const response = await client.post( url + "/search/" + keyword, {
-          lat: position.lat, lng: position.lng
+          lat: position.lat, lng: position.lng, next_page_token: null
         });
         const data = response.data;
         console.log(data);
@@ -143,6 +144,22 @@ function App() {
 
   const handleInitAddress = () => {
     setPosition({lat: 35.6667076, lng: 139.7143023})
+  }
+
+  const handleNextPage = () => {
+    (async () => {
+      try {
+        const response = await client.post(url + '/search/' + keyword, {
+          lat: 0.0, lng: 0.0, next_page_token: restaurants.next_page_token
+        })
+
+        const data = response.data
+        console.log(data);
+        setRestaurants(data);
+      } catch(error) {
+        console.error(error);
+      }
+    })();
   }
 
   
@@ -206,16 +223,15 @@ function App() {
           />
       </div>
 
+      {
+        restaurants && restaurants.next_page_token !== null &&
+        <div style={{display: "flex", justifyContent: "Center", marginTop: "20px"}}>
+          <button style={buttonStyle} onClick={handleNextPage}>
+            next
+          </button>
+        </div>
 
-      <div style={{display: "flex", justifyContent: "Center", marginTop: "20px"}}>
-        <button>
-          next
-        </button>
-      </div>
-
-
-      
-     
+      }
 
       <div>
         {

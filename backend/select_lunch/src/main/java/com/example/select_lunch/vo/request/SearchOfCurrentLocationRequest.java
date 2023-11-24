@@ -8,4 +8,6 @@ import lombok.NoArgsConstructor;
 public class SearchOfCurrentLocationRequest {
     private Double lat;
     private Double lng;
+
+    private String next_page_token;
 }

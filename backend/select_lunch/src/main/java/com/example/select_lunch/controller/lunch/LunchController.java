@@ -77,7 +77,8 @@ public class LunchController {
                 .searchOfCurrentLocation(
                     keyward, 
                     searchOfCurrentLocationRequest.getLat(), 
-                    searchOfCurrentLocationRequest.getLng()
+                    searchOfCurrentLocationRequest.getLng(),
+                    searchOfCurrentLocationRequest.getNext_page_token()
                     )
                 );
     }
