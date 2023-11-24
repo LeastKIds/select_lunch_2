@@ -7,4 +7,6 @@ import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity;
 
 public interface MongoDBService {
     ArrayList<RestaurantsEntity> restaurantsFindAll();
+
+    String restaurantsDeleteEntity(String id);
 }

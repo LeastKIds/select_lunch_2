@@ -33,6 +33,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: root
     networks:
       - our_net
+    container_name: mongoDBSelectLunch
 
 networks:
   our_net:

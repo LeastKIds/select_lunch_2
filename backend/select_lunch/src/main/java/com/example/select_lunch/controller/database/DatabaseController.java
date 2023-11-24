@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,6 +22,14 @@ public class DatabaseController {
     
     private final MongoDBService mongoDBService;
 
+    @GetMapping("/mongoDB/delete/{id}")
+    public ResponseEntity<String> restaurantsDeleteEntity(@PathVariable String id) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(mongoDBService.restaurantsDeleteEntity(id));
+    }
+
+
     @GetMapping("/mongoDB")
     public ResponseEntity<ArrayList<RestaurantsEntity>> restaurantsFindAll() {
         return ResponseEntity
@@ -32,4 +41,5 @@ public class DatabaseController {
                 );
     }
 
+    
 }
