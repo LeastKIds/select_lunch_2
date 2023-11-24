@@ -12,7 +12,7 @@ import greenTomato from './img/green_tomato.png'
 
 function App() {
 
-  const url = "https://f160-126-44-208-85.ngrok-free.app"
+  const url = "https://a8fe-126-44-208-85.ngrok-free.app"
 
   const client = axios.create({
     withCredentials: true,
@@ -68,6 +68,7 @@ function App() {
     },
   ];
 
+  const [address, setAddress] = useState('');
 
   const [keyword, setkeyword] = useState('');
   const [restaurants, setRestaurants] = useState(null);
@@ -103,6 +104,10 @@ function App() {
     setkeyword(event.target.value)
   }
 
+  const handleAddressInputChange = (event) => {
+    setAddress(event.target.value);
+  }
+
   const handleButton = () => {
     (async () => {
       try {
@@ -120,8 +125,20 @@ function App() {
         console.error(error);
       }
     })();
+  }
 
+  const handleGeocoding = () => {
+    (async () => {
+      try {
 
+        const response = await client.get(url + "/search/geocoding/" + address);
+        const data = response.data;
+        setPosition({lat: data.lat, lng: data.lng});
+
+      } catch (error) {
+        console.error(error);
+      }
+    })();
   }
 
   
@@ -151,6 +168,10 @@ function App() {
 
   return (
     <div className="App">
+      <div>
+        <input type="text" style={inputStyle} placeholder="여기에 입력하세요" value={address} onChange={handleAddressInputChange} />
+        <button style={buttonStyle} onClick={handleGeocoding}>주소</button>
+      </div>
       <div style={containerStyle}>
         <input type="text" style={inputStyle} placeholder="여기에 입력하세요" value={keyword} onChange={handleInputChange} />
         <button style={buttonStyle} onClick={handleButton}>클릭</button>

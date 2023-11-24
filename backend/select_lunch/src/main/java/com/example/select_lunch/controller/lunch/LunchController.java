@@ -18,6 +18,7 @@ import com.example.select_lunch.service.lunch.LunchService;
 import com.example.select_lunch.vo.request.SearchOfCurrentLocationRequest;
 import com.example.select_lunch.vo.request.SearchPlaceRequest;
 import com.example.select_lunch.vo.request.SearchReviewsTranslationRequest;
+import com.example.select_lunch.vo.response.lunch.SearchGeocodingResponse;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewsTranslationResponse;
@@ -53,6 +54,15 @@ public class LunchController {
                 .status(HttpStatus.OK)
                 .body(
                     lunchService.searchReviewsOfPlaceId(searchPlaceRequest.getPlace_id(), searchPlaceRequest.getKeyword())
+                );
+    }
+
+    @GetMapping("/search/geocoding/{address}")
+    public ResponseEntity<SearchGeocodingResponse> searchGeocoding(@PathVariable String address) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(
+                    lunchService.searchGeocoding(address)
                 );
     }
 

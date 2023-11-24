@@ -19,10 +19,15 @@ import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity.Restaura
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity.RestaurantsResult.RestaurantsResultReview;
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsRepository;
 import com.example.select_lunch.util.stanfordCoreNLP.StanfordCoreNLPConfig;
+import com.example.select_lunch.vo.response.lunch.SearchGeocodingResponse;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse.SearchReviewResult;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse.SearchReviewResult.Review;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.example.select_lunch.vo.response.lunch.SearchReviewsTranslationResponse;
 
 
@@ -95,56 +100,56 @@ public class LunchServiceImpl implements LunchService{
 
     private RestaurantsEntity searchGooglePlaceIdApi(String place_id, String keyword) {
         String baseUrl = "https://maps.googleapis.com/maps/api/place/details/json";
-            String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
-                        .queryParam("place_id", place_id)
-                        .queryParam("language", "en") // 결과를 한국어로 받기 위해 추가
-                        .queryParam("key", env.getProperty("google.places.api_key"))
-                        .encode()
-                        .toUriString();
+        String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                    .queryParam("place_id", place_id)
+                    .queryParam("language", "en") // 결과를 한국어로 받기 위해 추가
+                    .queryParam("key", env.getProperty("google.places.api_key"))
+                    .encode()
+                    .toUriString();
 
-            RestaurantsEntity restaurantsEntity = restTemplate.getForObject(url, RestaurantsEntity.class);
-            RestaurantsResult restaurantsResult = restaurantsEntity.getResult();
-            restaurantsResult.setPlaceId(place_id);
-            restaurantsEntity.setUpdateTime(LocalDate.now());
-            ArrayList<String> keywords = restaurantsEntity.getKeywords();
-            if(keywords == null)
-                keywords = new ArrayList<String>();
-            keywords.add(keyword);
-            restaurantsEntity.setKeywords(keywords);
-            ArrayList<RestaurantsResultReview> restaurantsResultReviews = restaurantsResult.getReviews();
-        
-            int reviewsCount = restaurantsResultReviews.size();
-            if(reviewsCount != 0) {
-                double reviewsSum = 0;
-                for(int i = 0; i < reviewsCount; i++) {
-                    double point = StanfordCoreNLPConfig.analyzeOverallSentiment(restaurantsResultReviews.get(i).getText());
-                    reviewsSum += point;
-                    restaurantsResultReviews.get(i).setEvaluationPoint(point);
-                    if(point > 2.5)
-                        restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.POSITIVE);
-                    else if (point < 2)
-                        restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.NEGATIVE);
-                    else 
-                        restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.NEUTRAL);
-                }
-                double reviewsResult = reviewsSum / reviewsCount;
-                restaurantsResult.setReviewEvaluationPoint(reviewsResult);
-
-                ReviewEvaluationEnum reviewEvaluationEnum;
-                if(reviewsResult > 2.5) 
-                    reviewEvaluationEnum = ReviewEvaluationEnum.POSITIVE;
-                else if(reviewsResult < 2) 
-                    reviewEvaluationEnum = ReviewEvaluationEnum.NEGATIVE;
-                else
-                    reviewEvaluationEnum = ReviewEvaluationEnum.NEUTRAL;
-                
-                restaurantsResult.setReviewEvaluation(reviewEvaluationEnum);
+        RestaurantsEntity restaurantsEntity = restTemplate.getForObject(url, RestaurantsEntity.class);
+        RestaurantsResult restaurantsResult = restaurantsEntity.getResult();
+        restaurantsResult.setPlaceId(place_id);
+        restaurantsEntity.setUpdateTime(LocalDate.now());
+        ArrayList<String> keywords = restaurantsEntity.getKeywords();
+        if(keywords == null)
+            keywords = new ArrayList<String>();
+        keywords.add(keyword);
+        restaurantsEntity.setKeywords(keywords);
+        ArrayList<RestaurantsResultReview> restaurantsResultReviews = restaurantsResult.getReviews();
+    
+        int reviewsCount = restaurantsResultReviews.size();
+        if(reviewsCount != 0) {
+            double reviewsSum = 0;
+            for(int i = 0; i < reviewsCount; i++) {
+                double point = StanfordCoreNLPConfig.analyzeOverallSentiment(restaurantsResultReviews.get(i).getText());
+                reviewsSum += point;
+                restaurantsResultReviews.get(i).setEvaluationPoint(point);
+                if(point > 2.5)
+                    restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.POSITIVE);
+                else if (point < 2)
+                    restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.NEGATIVE);
+                else 
+                    restaurantsResultReviews.get(i).setEvaluation(ReviewEvaluationEnum.NEUTRAL);
             }
+            double reviewsResult = reviewsSum / reviewsCount;
+            restaurantsResult.setReviewEvaluationPoint(reviewsResult);
 
-            restaurantsEntity.setResult(restaurantsResult);
-            restaurantsRepository.save(restaurantsEntity);
-            log.info("데이터 저장");
-            return restaurantsEntity;
+            ReviewEvaluationEnum reviewEvaluationEnum;
+            if(reviewsResult > 2.5) 
+                reviewEvaluationEnum = ReviewEvaluationEnum.POSITIVE;
+            else if(reviewsResult < 2) 
+                reviewEvaluationEnum = ReviewEvaluationEnum.NEGATIVE;
+            else
+                reviewEvaluationEnum = ReviewEvaluationEnum.NEUTRAL;
+            
+            restaurantsResult.setReviewEvaluation(reviewEvaluationEnum);
+        }
+
+        restaurantsEntity.setResult(restaurantsResult);
+        restaurantsRepository.save(restaurantsEntity);
+        log.info("데이터 저장");
+        return restaurantsEntity;
     }
 
 
@@ -155,6 +160,74 @@ public class LunchServiceImpl implements LunchService{
                     .builder()
                     .translationText(Translator.translate(Language.ENGLISH, Language.JAPANESE, text))
                     .build();
+    }
+
+    @Override
+    public SearchGeocodingResponse searchGeocoding(String address) {
+        System.out.println("Geocoding");
+        System.out.println("address: " + address);
+        // String baseUrl = "https://maps.googleapis.com/maps/api/geocode/json";
+
+        // String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
+        //         .queryParam("address", address)
+        //         .queryParam("key", env.getProperty("google.places.api_key"))
+        //         // .queryParam("language", "ko") // 결과를 한국어로 받기 위해 추가
+
+
+        //         .encode()
+        //         .toUriString();
+
+        String baseUrl = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json";
+
+        String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                .queryParam("fields", "formatted_address,name,rating,opening_hours,geometry")
+                .queryParam("input", address)
+                .queryParam("inputtype", "textquery")
+                .queryParam("key", env.getProperty("google.places.api_key"))
+                .encode()
+                .toUriString();
+
+        // JsonElement responseElement = JsonParser.parseString(restTemplate.getForObject(url, String.class));
+        // JsonObject responseObject = responseElement.getAsJsonObject();
+        // JsonArray candidates = responseObject.get("candidates").getAsJsonArray();
+        // JsonObject location = candidates.get(0).getAsJsonObject().get("geometry").getAsJsonObject().get("location").getAsJsonObject();
+        // String response = restTemplate.getForObject(url, String.class);
+
+        try {
+            JsonObject location = JsonParser
+                                .parseString(
+                                    restTemplate.getForObject(url, String.class)
+                                )
+                                .getAsJsonObject()
+                                .get("candidates")
+                                .getAsJsonArray()
+                                .get(0)
+                                .getAsJsonObject()
+                                .get("geometry")
+                                .getAsJsonObject()
+                                .get("location")
+                                .getAsJsonObject();
+
+            
+        System.out.println("check");
+
+            return SearchGeocodingResponse
+                .builder()
+                .lat(location.get("lat").getAsDouble())
+                .lng(location.get("lng").getAsDouble())
+                .build();
+        } catch (Exception e) {
+            log.error("값이 없어용!");
+
+            return SearchGeocodingResponse
+                    .builder()
+                    .lat(0.0)
+                    .lng(0.0)
+                    .build();
+        }
+        
+
+        
     }
     
 }
