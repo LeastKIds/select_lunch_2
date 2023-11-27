@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity;
+import com.example.select_lunch.jpa.lunch.restaurants.keywords.KeywordsEntity;
 import com.example.select_lunch.service.mongoDB.MongoDBService;
 
 import lombok.AllArgsConstructor;
@@ -30,7 +31,7 @@ public class DatabaseController {
     }
 
 
-    @GetMapping("/mongoDB")
+    @GetMapping("/mongoDB/restaurants")
     public ResponseEntity<ArrayList<RestaurantsEntity>> restaurantsFindAll() {
         return ResponseEntity
                 .status(
@@ -39,6 +40,13 @@ public class DatabaseController {
                 .body(
                     mongoDBService.restaurantsFindAll()
                 );
+    }
+
+    @GetMapping("/mongoDB/keywords")
+    public ResponseEntity<ArrayList<KeywordsEntity>> keywordsFindByAll() {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(mongoDBService.keywordsFindAll());
     }
 
     

@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -17,6 +16,8 @@ import com.example.select_lunch.e.lunch.ReviewEvaluationEnum;
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity;
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity.RestaurantsResult;
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity.RestaurantsResult.RestaurantsResultReview;
+import com.example.select_lunch.jpa.lunch.restaurants.keywords.KeywordsEntity;
+import com.example.select_lunch.jpa.lunch.restaurants.keywords.KeywordsRepository;
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsRepository;
 import com.example.select_lunch.util.stanfordCoreNLP.StanfordCoreNLPConfig;
 import com.example.select_lunch.vo.response.lunch.SearchGeocodingResponse;
@@ -41,16 +42,31 @@ public class LunchServiceImpl implements LunchService{
     private final Environment env;
     private final RestTemplate restTemplate;
     private final RestaurantsRepository restaurantsRepository;
+    private final KeywordsRepository keywordsRepository;
 
 
     @Override
-    public SearchResponse searchOfCurrentLocation(String keyward, double lat, double lng, String next_page_token) {
+    public SearchResponse searchOfCurrentLocation(String keyword, double lat, double lng, String next_page_token) {
+
+        Optional<String>optionalFindByKeywords = keywordsRepository.findByKeywords(keyword);
+        if(!optionalFindByKeywords.isPresent()) {
+            log.info("새로운 키워드");
+            keywordsRepository
+                .save(
+                    KeywordsEntity
+                        .builder()
+                        .keywords(keyword)
+                        .build()
+                    );
+            log.info("키워드 저장");
+        }
+
 
         String baseUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
         if(next_page_token == null) {
            
             String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
-                        .queryParam("keyword", keyward)
+                        .queryParam("keyword", keyword)
                         .queryParam("location", String.valueOf(lat) + "," + String.valueOf(lng))
                         .queryParam("radius", 500) // 단위는 미터
                         // .queryParam("rankby", "prominence")

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity;
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsRepository;
+import com.example.select_lunch.jpa.lunch.restaurants.keywords.KeywordsEntity;
+import com.example.select_lunch.jpa.lunch.restaurants.keywords.KeywordsRepository;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MongoDBServiceImpl implements MongoDBService {
 
     private final RestaurantsRepository restaurantsRepository;
+    private final KeywordsRepository keywordsRepository;
 
     @Override
     public ArrayList<RestaurantsEntity> restaurantsFindAll() {
@@ -35,6 +38,11 @@ public class MongoDBServiceImpl implements MongoDBService {
             return "해당 ID의 값을 가지고 있는 ENTITY는 존재하지 않습니다.";
         }
 
+    }
+
+    @Override
+    public ArrayList<KeywordsEntity> keywordsFindAll() {
+       return new ArrayList<>(keywordsRepository.findAll());
     }
     
 }

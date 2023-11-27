@@ -12,7 +12,7 @@ import greenTomato from './img/green_tomato.png'
 
 function App() {
 
-  const url = "https://a8fe-126-44-208-85.ngrok-free.app"
+  const url = "https://597c-126-44-208-85.ngrok-free.app"
 
   const client = axios.create({
     withCredentials: true,
@@ -98,7 +98,7 @@ function App() {
   Modal.setAppElement('#root');
 
 
-  const googleApi = process.env.REACT_APP_GOOGLE_MAP_API
+  // const googleApi = process.env.REACT_APP_GOOGLE_MAP_API
 
 
   const handleInputChange = (event) => {
