@@ -17,7 +17,10 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
   const [map, setMap] = useState();
 
   const [markers, setMarkers] = useState([]);
-  const [path, setPath] = useState([]);
+
+  const [path, setPath] = useState(null);
+  const [currentPathFeature, setCurrentPathFeature] = useState(null);
+  const [vectorSourceSave, setVectorSourceSave] = useState(null);
 
   useEffect(() => {
     // 지도 초기화
@@ -80,66 +83,101 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
     initialMap.addLayer(vectorLayer);
 
 
+    
+
+
     // 클릭 이벤트 리스너 추가
     const handleClick = (event) => {
       let clickedOnFeature = false;
 
+      const handleMarkerClick = async (markersArray, feature) => {
 
-      initialMap.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
+        markersArray.forEach(async clickMarker => {
+          if(clickMarker[0] === feature) {
+            
+            const routeResponse = await client.post(url + '/mapRoute/minDistances', {
+              startLat: position.lat,
+              startLng: position.lng,
+              endLat: clickMarker[1].geometry.location.lat,
+              endLng: clickMarker[1].geometry.location.lng
+            });
+            console.log(routeResponse.data);
+            setPath(routeResponse.data);
+
+            const response = await client.post(url + '/search/place', {place_id: clickMarker[1].place_id, keyword: keyword})
+            const result = response.data.result;
+            // console.log(result);
+            handleSetModalData(result);
+            handleModalIsOpen(true);
+
+            
+          }
+        })
+      }
+
+      initialMap.forEachFeatureAtPixel(event.pixel, async (feature, layer) => {
         clickedOnFeature = true;
         // 여기서 마커 클릭 처리 로직을 추가할 수 있습니다.
         if(currentMarker === feature) {
           console.log("현재 위치: ", feature);
         } else {
-          markersArray.forEach(async clickMarker => {
-            if(clickMarker[0] === feature) {
 
-              const routeResponse = await client.post(url + '/mapRoute/minDistances', {
-                startLat: position.lat,
-                startLng: position.lng,
-                endLat: clickMarker[1].geometry.location.lat,
-                endLng: clickMarker[1].geometry.location.lng
-              });
-              console.log(routeResponse.data);
-              setPath(routeResponse.data);
+          await handleMarkerClick(markersArray, feature);
 
-              const pathCoordinates = routeResponse.data.paths[0].points.coordinates;
+          // markersArray.forEach(async clickMarker => {
+          //   if(clickMarker[0] === feature) {
+          //     if(currentPathFeature) {
+          //       console.log("원래 있었음");
+          //       vectorSource.removeFeature(currentPathFeature);
+          //     }
+
+          //     const routeResponse = await client.post(url + '/mapRoute/minDistances', {
+          //       startLat: position.lat,
+          //       startLng: position.lng,
+          //       endLat: clickMarker[1].geometry.location.lat,
+          //       endLng: clickMarker[1].geometry.location.lng
+          //     });
+          //     console.log(routeResponse.data);
+          //     setPath(routeResponse.data);
+
+          //     const pathCoordinates = routeResponse.data.paths[0].points.coordinates;
               
-              // OpenLayers의 좌표 형식으로 변환
-              const olCoordinates = pathCoordinates.map(coord => fromLonLat(coord));
+          //     // OpenLayers의 좌표 형식으로 변환
+          //     const olCoordinates = pathCoordinates.map(coord => fromLonLat(coord));
 
-              // LineString 객체 생성
-              const lineString = new LineString(olCoordinates);
+          //     // LineString 객체 생성
+          //     const lineString = new LineString(olCoordinates);
 
-              // LineString에 대한 스타일 설정
-              const lineStyle = new Style({
-                  stroke: new Stroke({
-                      color: 'blue',
-                      width: 5
-                  })
-              });
+          //     // LineString에 대한 스타일 설정
+          //     const lineStyle = new Style({
+          //         stroke: new Stroke({
+          //             color: 'blue',
+          //             width: 5
+          //         })
+          //     });
 
-              // LineString Feature 생성
-              const lineFeature = new Feature({
-                  geometry: lineString
-              });
+          //     // LineString Feature 생성
+          //     const lineFeature = new Feature({
+          //         geometry: lineString
+          //     });
 
-              // 스타일 적용
-              lineFeature.setStyle(lineStyle);
+          //     // 스타일 적용
+          //     lineFeature.setStyle(lineStyle);
 
-              // 벡터 소스에 LineString Feature 추가
-              vectorSource.addFeature(lineFeature);
+          //     // 벡터 소스에 LineString Feature 추가
+          //     vectorSource.addFeature(lineFeature);
+              
+          //     setCurrentPathFeature(lineFeature);
 
-
-              const response = await client.post(url + '/search/place', {place_id: clickMarker[1].place_id, keyword: keyword})
-              const result = response.data.result;
-              // console.log(result);
-              handleSetModalData(result);
-              handleModalIsOpen(true);
+          //     const response = await client.post(url + '/search/place', {place_id: clickMarker[1].place_id, keyword: keyword})
+          //     const result = response.data.result;
+          //     // console.log(result);
+          //     handleSetModalData(result);
+          //     handleModalIsOpen(true);
 
               
-            }
-          })
+          //   }
+          // })
         }
       });
     
@@ -152,21 +190,13 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
         console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
         handleSetPosition({lat: latitude, lng: longitude});
       }
+
+      
     };
 
     initialMap.on('singleclick', handleClick);
     setMap(initialMap);
-
-
-     // 경로 데이터
-    //  const pathCoordinates = [
-    //   [139.714204, 35.666764], [139.715415, 35.668107], [139.715976, 35.668851], 
-    //   [139.716083, 35.668889], [139.716209, 35.669031], [139.716307, 35.668968]
-    //   ];
-
-      
-
-
+    setVectorSourceSave(vectorSource);
 
     return () => {
       initialMap.setTarget(undefined)
@@ -178,7 +208,64 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
   }, [position, restaurants]);
 
 
+  useEffect(() => {
+    if(currentPathFeature) {
+      vectorSourceSave.removeFeature(currentPathFeature);
+    }
 
+    if(path) {
+      const pathCoordinates = path.paths[0].points.coordinates;
+      const olCoordinates = pathCoordinates.map(coord => fromLonLat(coord));
+      const lineString = new LineString(olCoordinates);
+
+      const lineStyle = new Style({
+                  stroke: new Stroke({
+                      color: 'blue',
+                      width: 5
+                  })
+              });
+
+      const lineFeature = new Feature({
+                  geometry: lineString
+              });
+
+      lineFeature.setStyle(lineStyle);
+      vectorSourceSave.addFeature(lineFeature);
+      setCurrentPathFeature(lineFeature);
+      setVectorSourceSave(vectorSourceSave);
+    }
+    
+    // const pathCoordinates = path.paths[0].points.coordinates;
+    //       // OpenLayers의 좌표 형식으로 변환
+    //       const olCoordinates = pathCoordinates.map(coord => fromLonLat(coord));
+
+    //       // LineString 객체 생성
+    //       const lineString = new LineString(olCoordinates);
+
+    //       // LineString에 대한 스타일 설정
+    //       const lineStyle = new Style({
+    //           stroke: new Stroke({
+    //               color: 'blue',
+    //               width: 5
+    //           })
+    //       });
+
+    //       // LineString Feature 생성
+    //       const lineFeature = new Feature({
+    //           geometry: lineString
+    //       });
+
+    //       // 스타일 적용
+    //       lineFeature.setStyle(lineStyle);
+
+    //       // 벡터 소스에 LineString Feature 추가
+    //       vectorSourceSave.addFeature(lineFeature);
+          
+    //       console.log("저장 돼? " + lineFeature);
+    //       setCurrentPathFeature(lineFeature);
+    //       setVectorSourceSave(vectorSourceSave);
+    
+  }, [path]);
 
   return <div ref={mapRef} style={{ width: '100%', height: '400px' }}></div>;
 };
