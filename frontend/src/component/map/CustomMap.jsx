@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, } from 'react';
+import * as ol from 'ol';
 import 'ol/ol.css';
 import { Map, View } from 'ol';
 import TileLayer from 'ol/layer/Tile';
@@ -8,13 +9,15 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import { Point } from 'ol/geom';
 import { Feature } from 'ol';
-import { Style, Icon } from 'ol/style';
+import { Style, Icon, Stroke } from 'ol/style';
+import { LineString } from 'ol/geom';
 
 const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModalIsOpen, restaurants, client, url, keyword}) => {
   const mapRef = useRef();
   const [map, setMap] = useState();
 
   const [markers, setMarkers] = useState([]);
+  const [pathCoordinates, setPathCoordinates] = useState([]);
 
   useEffect(() => {
     // 지도 초기화
@@ -90,11 +93,25 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
         } else {
           markersArray.forEach(async clickMarker => {
             if(clickMarker[0] === feature) {
+
+              const routeResponse = await client.post(url + '/mapRoute/minDistances', {
+                startLat: position.lat,
+                startLng: position.lng,
+                endLat: clickMarker[1].geometry.location.lat,
+                endLng: clickMarker[1].geometry.location.lng
+              })
+
+              console.log(routeResponse);
+
+
+
               const response = await client.post(url + '/search/place', {place_id: clickMarker[1].place_id, keyword: keyword})
               const result = response.data.result;
-              console.log(result);
+              // console.log(result);
               handleSetModalData(result);
               handleModalIsOpen(true);
+
+              
             }
           })
         }
@@ -113,6 +130,40 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
 
     initialMap.on('singleclick', handleClick);
     setMap(initialMap);
+
+
+     // 경로 데이터
+     const pathCoordinates = [
+      [139.714204, 35.666764], [139.715415, 35.668107], [139.715976, 35.668851], 
+      [139.716083, 35.668889], [139.716209, 35.669031], [139.716307, 35.668968]
+      ];
+
+      // OpenLayers의 좌표 형식으로 변환
+      const olCoordinates = pathCoordinates.map(coord => fromLonLat(coord));
+
+      // LineString 객체 생성
+      const lineString = new LineString(olCoordinates);
+
+      // LineString에 대한 스타일 설정
+      const lineStyle = new Style({
+          stroke: new Stroke({
+              color: 'blue',
+              width: 5
+          })
+      });
+
+      // LineString Feature 생성
+      const lineFeature = new Feature({
+          geometry: lineString
+      });
+
+      // 스타일 적용
+      lineFeature.setStyle(lineStyle);
+
+      // 벡터 소스에 LineString Feature 추가
+      vectorSource.addFeature(lineFeature);
+
+
 
     return () => {
       initialMap.setTarget(undefined)

@@ -49,6 +49,7 @@ public class RestaurantsEntity {
         private String url;
         private Integer user_ratings_total;
         private String website;
+        private RestaurantsResultGeometry geometry;
 
         @Data
         @Builder
@@ -74,6 +75,24 @@ public class RestaurantsEntity {
             private String text;
             private ReviewEvaluationEnum evaluation;
             private Double evaluationPoint;
+        }
+
+        @Data
+        @Builder
+        @AllArgsConstructor
+        @NoArgsConstructor
+        public static class RestaurantsResultGeometry {
+
+            private RestaurantsResultGeometryLocation location;
+
+            @Data
+            @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
+            public static class RestaurantsResultGeometryLocation {
+                private Double lat;
+                private Double lng;
+            }
         }
     }
 }
