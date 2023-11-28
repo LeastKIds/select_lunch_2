@@ -12,7 +12,7 @@ import { Feature } from 'ol';
 import { Style, Icon, Stroke } from 'ol/style';
 import { LineString } from 'ol/geom';
 
-const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModalIsOpen, restaurants, client, url, keyword}) => {
+const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants, client, url, keyword}) => {
   const mapRef = useRef();
   const [map, setMap] = useState();
 
@@ -82,10 +82,6 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
 
     initialMap.addLayer(vectorLayer);
 
-
-    
-
-
     // 클릭 이벤트 리스너 추가
     const handleClick = (event) => {
       let clickedOnFeature = false;
@@ -106,9 +102,8 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
 
             const response = await client.post(url + '/search/place', {place_id: clickMarker[1].place_id, keyword: keyword})
             const result = response.data.result;
-            // console.log(result);
             handleSetModalData(result);
-            handleModalIsOpen(true);
+            // handleModalIsOpen(true);
 
             
           }
@@ -121,63 +116,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
         if(currentMarker === feature) {
           console.log("현재 위치: ", feature);
         } else {
-
           await handleMarkerClick(markersArray, feature);
-
-          // markersArray.forEach(async clickMarker => {
-          //   if(clickMarker[0] === feature) {
-          //     if(currentPathFeature) {
-          //       console.log("원래 있었음");
-          //       vectorSource.removeFeature(currentPathFeature);
-          //     }
-
-          //     const routeResponse = await client.post(url + '/mapRoute/minDistances', {
-          //       startLat: position.lat,
-          //       startLng: position.lng,
-          //       endLat: clickMarker[1].geometry.location.lat,
-          //       endLng: clickMarker[1].geometry.location.lng
-          //     });
-          //     console.log(routeResponse.data);
-          //     setPath(routeResponse.data);
-
-          //     const pathCoordinates = routeResponse.data.paths[0].points.coordinates;
-              
-          //     // OpenLayers의 좌표 형식으로 변환
-          //     const olCoordinates = pathCoordinates.map(coord => fromLonLat(coord));
-
-          //     // LineString 객체 생성
-          //     const lineString = new LineString(olCoordinates);
-
-          //     // LineString에 대한 스타일 설정
-          //     const lineStyle = new Style({
-          //         stroke: new Stroke({
-          //             color: 'blue',
-          //             width: 5
-          //         })
-          //     });
-
-          //     // LineString Feature 생성
-          //     const lineFeature = new Feature({
-          //         geometry: lineString
-          //     });
-
-          //     // 스타일 적용
-          //     lineFeature.setStyle(lineStyle);
-
-          //     // 벡터 소스에 LineString Feature 추가
-          //     vectorSource.addFeature(lineFeature);
-              
-          //     setCurrentPathFeature(lineFeature);
-
-          //     const response = await client.post(url + '/search/place', {place_id: clickMarker[1].place_id, keyword: keyword})
-          //     const result = response.data.result;
-          //     // console.log(result);
-          //     handleSetModalData(result);
-          //     handleModalIsOpen(true);
-
-              
-          //   }
-          // })
         }
       });
     
@@ -234,36 +173,6 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, handleModal
       setCurrentPathFeature(lineFeature);
       setVectorSourceSave(vectorSourceSave);
     }
-    
-    // const pathCoordinates = path.paths[0].points.coordinates;
-    //       // OpenLayers의 좌표 형식으로 변환
-    //       const olCoordinates = pathCoordinates.map(coord => fromLonLat(coord));
-
-    //       // LineString 객체 생성
-    //       const lineString = new LineString(olCoordinates);
-
-    //       // LineString에 대한 스타일 설정
-    //       const lineStyle = new Style({
-    //           stroke: new Stroke({
-    //               color: 'blue',
-    //               width: 5
-    //           })
-    //       });
-
-    //       // LineString Feature 생성
-    //       const lineFeature = new Feature({
-    //           geometry: lineString
-    //       });
-
-    //       // 스타일 적용
-    //       lineFeature.setStyle(lineStyle);
-
-    //       // 벡터 소스에 LineString Feature 추가
-    //       vectorSourceSave.addFeature(lineFeature);
-          
-    //       console.log("저장 돼? " + lineFeature);
-    //       setCurrentPathFeature(lineFeature);
-    //       setVectorSourceSave(vectorSourceSave);
     
   }, [path]);
 

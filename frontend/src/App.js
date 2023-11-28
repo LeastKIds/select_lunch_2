@@ -90,6 +90,12 @@ function App() {
   const handleSetModalData = (newModalData) => {
     setModalData(newModalData);
   }
+  const handleRestaurantBoxSetModalData = (response, review) => {
+    setModalData(prevObject => ({
+      ...prevObject, 
+      reviews: prevObject.reviews.map(item => item.text === review.text ? {...item, translationJp: response.data.translationText} : item)
+      }))
+  }
 
   const [reviewOpen, setReviewOpen] = useState(false);
 
@@ -216,7 +222,7 @@ function App() {
           handleSetPosition={handleSetPosition} 
           position={position} restaurants={restaurants} 
           handleSetModalData={handleSetModalData} 
-          handleModalIsOpen={handleModalIsOpen}
+          
           url={url}
           client={client}
           keyword={keyword}
@@ -235,9 +241,9 @@ function App() {
 
       <div>
         {
-          restaurants && 
+          modalData && 
           <>
-            <RestaurantBoxComponent restaurants={restaurants["results"]} />
+            <RestaurantBoxComponent modalData={modalData} client={client} url={url} handleRestaurantBoxSetModalData={handleRestaurantBoxSetModalData}/>
           </>
         }
       </div>
