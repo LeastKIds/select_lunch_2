@@ -2,6 +2,7 @@ package com.example.select_lunch.service.lunch;
 
 import com.example.select_lunch.vo.request.SearchPlaceRequest;
 import com.example.select_lunch.vo.response.lunch.SearchGeocodingResponse;
+import com.example.select_lunch.vo.response.lunch.SearchKeywordsResponse;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewsTranslationResponse;
@@ -14,4 +15,6 @@ public interface LunchService {
     SearchReviewsTranslationResponse searchReviewsTranslationResponse(String text);
 
     SearchGeocodingResponse searchGeocoding(String address);
+
+    SearchKeywordsResponse searchKeywords();
 }

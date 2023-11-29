@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -24,6 +25,7 @@ import com.example.select_lunch.util.stanfordCoreNLP.StanfordCoreNLPConfig;
 import com.example.select_lunch.vo.request.SearchPlaceRequest;
 import com.example.select_lunch.vo.request.mapRoute.MinDistancesRequest;
 import com.example.select_lunch.vo.response.lunch.SearchGeocodingResponse;
+import com.example.select_lunch.vo.response.lunch.SearchKeywordsResponse;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
 import com.google.gson.JsonObject;
@@ -263,6 +265,26 @@ public class LunchServiceImpl implements LunchService{
         
 
         
+    }
+
+    @Override
+    public SearchKeywordsResponse searchKeywords() {
+
+        ArrayList<String> keywordsArrayList = keywordsRepository
+                                                .findAll()
+                                                .stream()
+                                                .map(
+                                                    KeywordsEntity::getKeywords
+                                                )
+                                                .collect(
+                                                    Collectors
+                                                        .toCollection(ArrayList::new)
+                                                );
+        return SearchKeywordsResponse
+                .builder()
+                .keywords(keywordsArrayList)
+                .build();
+
     }
     
 }

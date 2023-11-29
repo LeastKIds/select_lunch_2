@@ -10,9 +10,10 @@ import tomatoImg from './img/tomato.jpg'
 import decayTomatoImg from './img/decay_tomato.png'
 import greenTomato from './img/green_tomato.png'
 
+
 function App() {
 
-  const url = "https://70fe-126-44-208-85.ngrok-free.app"
+  const url = "https://a86b-126-44-208-85.ngrok-free.app"
 
   const client = axios.create({
     withCredentials: true,
@@ -68,6 +69,22 @@ function App() {
     },
   ];
 
+  const keywordsButtonStyle = {
+    padding: '10px',
+    margin: '5px',
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '16px',
+  }
+  const keywordsButtonContainerStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
+
   const [address, setAddress] = useState('');
 
   const [keyword, setkeyword] = useState('');
@@ -98,6 +115,8 @@ function App() {
   }
 
   const [reviewOpen, setReviewOpen] = useState(false);
+
+  const [keywordsButton, setKeywordsButton] = useState([]);
 
 
 
@@ -168,6 +187,10 @@ function App() {
     })();
   }
 
+  const handleKeywordsButton = (keyword) => {
+    
+  }
+
   
 
   useEffect(() => {
@@ -182,6 +205,15 @@ function App() {
         }
       );
     }
+
+    (async () => {
+      try {
+        const response = await client.get(url + '/search/keywords');
+        setKeywordsButton(response.data.keywords)
+      } catch(error) {
+        console.error(error);
+      }
+    })();
 
   }, []);
 
@@ -215,7 +247,18 @@ function App() {
         
 
       </div>
-
+      <div style={keywordsButtonContainerStyle}>
+        {
+          keywordsButton &&
+            <>
+            {
+              keywordsButton.map( (keywordButton, index) => (
+                <button style={keywordsButtonStyle} key={index}>{keywordButton}</button>
+              ))
+            }
+            </>
+        }
+      </div>
       
       <div>
         <CustomMap 

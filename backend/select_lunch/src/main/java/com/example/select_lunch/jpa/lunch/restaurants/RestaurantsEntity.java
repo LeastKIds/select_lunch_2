@@ -28,7 +28,7 @@ public class RestaurantsEntity {
     private String status;
     private LocalDate updateTime;
     private ArrayList<String> keywords;
-
+    private Double point;
     
 
     @Data

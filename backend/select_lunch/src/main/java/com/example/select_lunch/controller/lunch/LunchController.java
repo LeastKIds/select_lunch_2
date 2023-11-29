@@ -16,10 +16,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity;
 import com.example.select_lunch.service.lunch.LunchService;
+import com.example.select_lunch.service.lunch.best.BestService;
 import com.example.select_lunch.vo.request.SearchOfCurrentLocationRequest;
 import com.example.select_lunch.vo.request.SearchPlaceRequest;
 import com.example.select_lunch.vo.request.SearchReviewsTranslationRequest;
 import com.example.select_lunch.vo.response.lunch.SearchGeocodingResponse;
+import com.example.select_lunch.vo.response.lunch.SearchKeywordsResponse;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewsTranslationResponse;
@@ -34,6 +36,7 @@ import lombok.AllArgsConstructor;
 public class LunchController {
 
     private final LunchService lunchService;
+    private final BestService bestService;
 
     @PostMapping("/search/reviews/translation")
     public ResponseEntity<SearchReviewsTranslationResponse> searchReviewsTranslation(@RequestBody SearchReviewsTranslationRequest searchReviewsTranslationRequest) {
@@ -65,6 +68,21 @@ public class LunchController {
                 .body(
                     lunchService.searchGeocoding(address)
                 );
+    }
+
+
+    @GetMapping("/search/keywords")
+    public ResponseEntity<SearchKeywordsResponse> searchKeywords() {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(lunchService.searchKeywords());
+    }
+
+    @GetMapping("/search/best/{keyword}")
+    public ResponseEntity<ArrayList<RestaurantsEntity>> searchBestRestaurants(@PathVariable String keyword) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(bestService.searchBestRestaurants(keyword));
     }
 
 
