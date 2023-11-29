@@ -1,5 +1,6 @@
 package com.example.select_lunch.service.lunch;
 
+import com.example.select_lunch.vo.request.SearchPlaceRequest;
 import com.example.select_lunch.vo.response.lunch.SearchGeocodingResponse;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
@@ -8,7 +9,7 @@ import com.example.select_lunch.vo.response.lunch.SearchReviewsTranslationRespon
 public interface LunchService {
     SearchResponse searchOfCurrentLocation(String keyward, double lat, double lng, String next_page_token);
 
-    SearchReviewResponse searchReviewsOfPlaceId(String place_id, String keyword);
+    SearchReviewResponse searchReviewsOfPlaceId(SearchPlaceRequest searchPlaceRequest);
 
     SearchReviewsTranslationResponse searchReviewsTranslationResponse(String text);
 

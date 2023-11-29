@@ -12,4 +12,8 @@ import lombok.NoArgsConstructor;
 public class SearchPlaceRequest {
     private String place_id;
     private String keyword;
+    private Double startLat;
+    private Double startLng;
+    private Double endLat;
+    private Double endLng;
 }

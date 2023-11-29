@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.select_lunch.e.lunch.ReviewEvaluationEnum;
+import com.example.select_lunch.vo.response.mapRoute.GraphHopperResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +28,8 @@ public class RestaurantsEntity {
     private String status;
     private LocalDate updateTime;
     private ArrayList<String> keywords;
+
+    
 
     @Data
     @Builder
@@ -50,6 +53,8 @@ public class RestaurantsEntity {
         private Integer user_ratings_total;
         private String website;
         private RestaurantsResultGeometry geometry;
+
+        private GraphHopperResponse graphHopperResponse;
 
         @Data
         @Builder

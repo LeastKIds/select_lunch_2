@@ -54,7 +54,7 @@ public class LunchController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(
-                    lunchService.searchReviewsOfPlaceId(searchPlaceRequest.getPlace_id(), searchPlaceRequest.getKeyword())
+                    lunchService.searchReviewsOfPlaceId(searchPlaceRequest)
                 );
     }
 

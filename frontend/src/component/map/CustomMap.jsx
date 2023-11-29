@@ -22,6 +22,8 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
   const [currentPathFeature, setCurrentPathFeature] = useState(null);
   const [vectorSourceSave, setVectorSourceSave] = useState(null);
 
+  const [pointermove, setPointermove] = useState(false);
+
   useEffect(() => {
     // 지도 초기화
     const initialMap = new Map({
@@ -91,18 +93,27 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
         markersArray.forEach(async clickMarker => {
           if(clickMarker[0] === feature) {
             
-            const routeResponse = await client.post(url + '/mapRoute/minDistances', {
+            // const routeResponse = await client.post(url + '/mapRoute/minDistances', {
+            //   startLat: position.lat,
+            //   startLng: position.lng,
+            //   endLat: clickMarker[1].geometry.location.lat,
+            //   endLng: clickMarker[1].geometry.location.lng
+            // });
+            // console.log(routeResponse.data);
+            // setPath(routeResponse.data);
+
+            const response = await client.post(url + '/search/place', {
+              place_id: clickMarker[1].place_id, 
+              keyword: keyword,
               startLat: position.lat,
               startLng: position.lng,
               endLat: clickMarker[1].geometry.location.lat,
               endLng: clickMarker[1].geometry.location.lng
-            });
-            console.log(routeResponse.data);
-            setPath(routeResponse.data);
-
-            const response = await client.post(url + '/search/place', {place_id: clickMarker[1].place_id, keyword: keyword})
+            })
             const result = response.data.result;
             handleSetModalData(result);
+            setPath(result.graphHopperResponse);
+            console.log(result);
             // handleModalIsOpen(true);
 
             
@@ -134,6 +145,9 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
     };
 
     initialMap.on('singleclick', handleClick);
+
+    
+
     setMap(initialMap);
     setVectorSourceSave(vectorSource);
 
@@ -150,6 +164,31 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
   useEffect(() => {
     if(currentPathFeature) {
       vectorSourceSave.removeFeature(currentPathFeature);
+    }
+
+    if(!pointermove && map) {
+      const overlay = new ol.Overlay({
+        element: document.getElementById('popup'),
+        positioning: 'bottom-center',
+        offset: [0, -10]
+      });
+      map.addOverlay(overlay);
+  
+      map.on('pointermove', (event) => {
+        if (map.hasFeatureAtPixel(event.pixel)) {
+          const feature = map.forEachFeatureAtPixel(event.pixel, (feature) => feature);
+    
+          if (feature === currentPathFeature) {
+            const coordinate = event.coordinate;
+            overlay.setPosition(coordinate);
+    
+            // 정보를 오버레이에 표시 (예: 경로 정보)
+            console.log("check");
+          }
+        } else {
+          console.log("not");
+        }
+      });
     }
 
     if(path) {

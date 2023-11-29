@@ -10,7 +10,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://d401-126-44-208-85.ngrok-free.app") // React 애플리케이션의 URL을 허용
+                .allowedOrigins("https://bd90-126-44-208-85.ngrok-free.app") // React 애플리케이션의 URL을 허용
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);

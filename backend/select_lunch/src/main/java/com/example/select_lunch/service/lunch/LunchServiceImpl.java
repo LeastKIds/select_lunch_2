@@ -18,15 +18,18 @@ import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity.Restaura
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsEntity.RestaurantsResult.RestaurantsResultReview;
 import com.example.select_lunch.jpa.lunch.restaurants.keywords.KeywordsEntity;
 import com.example.select_lunch.jpa.lunch.restaurants.keywords.KeywordsRepository;
+import com.example.select_lunch.service.mapRoute.MapRouteService;
 import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsRepository;
 import com.example.select_lunch.util.stanfordCoreNLP.StanfordCoreNLPConfig;
+import com.example.select_lunch.vo.request.SearchPlaceRequest;
+import com.example.select_lunch.vo.request.mapRoute.MinDistancesRequest;
 import com.example.select_lunch.vo.response.lunch.SearchGeocodingResponse;
 import com.example.select_lunch.vo.response.lunch.SearchResponse;
 import com.example.select_lunch.vo.response.lunch.SearchReviewResponse;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.example.select_lunch.vo.response.lunch.SearchReviewsTranslationResponse;
-
+import com.example.select_lunch.vo.response.mapRoute.GraphHopperResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +46,7 @@ public class LunchServiceImpl implements LunchService{
     private final RestTemplate restTemplate;
     private final RestaurantsRepository restaurantsRepository;
     private final KeywordsRepository keywordsRepository;
+    private final MapRouteService mapRouteService;
 
 
     @Override
@@ -91,26 +95,26 @@ public class LunchServiceImpl implements LunchService{
     }
 
     @Override
-    public SearchReviewResponse searchReviewsOfPlaceId(String place_id, String keyword) {
+    public SearchReviewResponse searchReviewsOfPlaceId(SearchPlaceRequest searchPlaceRequest) {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-        Optional<RestaurantsEntity> searchDatabaseRestaurantsEntity = restaurantsRepository.findByResultPlaceId(place_id);
+        Optional<RestaurantsEntity> searchDatabaseRestaurantsEntity = restaurantsRepository.findByResultPlaceId(searchPlaceRequest.getPlace_id());
         if(searchDatabaseRestaurantsEntity.isPresent()) {
             log.info("중복 값 존재");
             RestaurantsEntity restaurantsEntity = searchDatabaseRestaurantsEntity.get();
 
             ArrayList<String> prevKeywords = restaurantsEntity.getKeywords();
-            Boolean isKeywordChange = prevKeywords.contains(keyword);
+            Boolean isKeywordChange = prevKeywords.contains(searchPlaceRequest.getKeyword());
             if(!isKeywordChange) {
                 log.info("새로운 키워드 발견");
-                prevKeywords.add(keyword);
+                prevKeywords.add(searchPlaceRequest.getKeyword());
             }
 
             if(ChronoUnit.DAYS.between(LocalDate.now(), restaurantsEntity.getUpdateTime()) >= 1) {
                 log.info("하루 지난 옛날 데이터");
                 restaurantsRepository.delete(restaurantsEntity);
-                return mapper.map(searchGooglePlaceIdApi(place_id, keyword, prevKeywords), SearchReviewResponse.class);
+                return mapper.map(searchGooglePlaceIdApi(searchPlaceRequest, prevKeywords), SearchReviewResponse.class);
             } else {
                 log.info("하루가 지나지 않은 신선한 데이터");
                 if(!isKeywordChange) {
@@ -122,8 +126,8 @@ public class LunchServiceImpl implements LunchService{
 
         } else {
             log.info("새로운 데이터");
-            SearchReviewResponse searchReviewResponse = mapper.map(searchGooglePlaceIdApi(place_id, keyword, null), SearchReviewResponse.class);
-            searchReviewResponse.getResult().setPlace_id(place_id);
+            SearchReviewResponse searchReviewResponse = mapper.map(searchGooglePlaceIdApi(searchPlaceRequest, null), SearchReviewResponse.class);
+            searchReviewResponse.getResult().setPlace_id(searchPlaceRequest.getPlace_id());
             return searchReviewResponse;
         }
 
@@ -132,27 +136,25 @@ public class LunchServiceImpl implements LunchService{
     }
 
 
-    private RestaurantsEntity searchGooglePlaceIdApi(String place_id, String keyword, ArrayList<String> prevKeywords) {
+    private RestaurantsEntity searchGooglePlaceIdApi(SearchPlaceRequest searchPlaceRequest, ArrayList<String> prevKeywords) {
+
         String baseUrl = "https://maps.googleapis.com/maps/api/place/details/json";
         String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
-                    .queryParam("place_id", place_id)
+                    .queryParam("place_id", searchPlaceRequest.getPlace_id())
                     .queryParam("language", "en") // 결과를 한국어로 받기 위해 추가
                     .queryParam("key", env.getProperty("google.places.api_key"))
                     .encode()
                     .toUriString();
 
         RestaurantsEntity restaurantsEntity = restTemplate.getForObject(url, RestaurantsEntity.class);
-
-        System.out.println(restTemplate.getForObject(url, String.class));
-
         
         RestaurantsResult restaurantsResult = restaurantsEntity.getResult();
-        restaurantsResult.setPlaceId(place_id);
+        restaurantsResult.setPlaceId(searchPlaceRequest.getPlace_id());
         restaurantsEntity.setUpdateTime(LocalDate.now());
         ArrayList<String> keywords = restaurantsEntity.getKeywords();
         if(prevKeywords == null) {
             keywords = new ArrayList<String>();
-            keywords.add(keyword);
+            keywords.add(searchPlaceRequest.getKeyword());
         }       
         else
             keywords = prevKeywords;
@@ -187,7 +189,20 @@ public class LunchServiceImpl implements LunchService{
             restaurantsResult.setReviewEvaluation(reviewEvaluationEnum);
         }
 
+        log.info("경로 찾는 중");
+        GraphHopperResponse graphHopperResponse = mapRouteService.minDistances(
+                MinDistancesRequest
+                    .builder()
+                    .startLat(searchPlaceRequest.getStartLat())
+                    .startLng(searchPlaceRequest.getStartLng())
+                    .endLat(searchPlaceRequest.getEndLat())
+                    .endLng(searchPlaceRequest.getEndLng())
+                    .build());
+        
+        restaurantsResult.setGraphHopperResponse(graphHopperResponse);
         restaurantsEntity.setResult(restaurantsResult);
+        log.info("경로 저장");
+
         restaurantsRepository.save(restaurantsEntity);
         log.info("데이터 저장");
         return restaurantsEntity;

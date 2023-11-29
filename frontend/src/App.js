@@ -12,7 +12,7 @@ import greenTomato from './img/green_tomato.png'
 
 function App() {
 
-  const url = "https://aaba-126-44-208-85.ngrok-free.app"
+  const url = "https://70fe-126-44-208-85.ngrok-free.app"
 
   const client = axios.create({
     withCredentials: true,

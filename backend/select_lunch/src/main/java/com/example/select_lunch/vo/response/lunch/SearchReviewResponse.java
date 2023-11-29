@@ -3,6 +3,7 @@ package com.example.select_lunch.vo.response.lunch;
 import java.util.ArrayList;
 
 import com.example.select_lunch.e.lunch.ReviewEvaluationEnum;
+import com.example.select_lunch.vo.response.mapRoute.GraphHopperResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,6 +41,8 @@ public class SearchReviewResponse {
         private String url;
         private Integer user_ratings_total;
         private String website;
+
+        private GraphHopperResponse graphHopperResponse;
 
         @Data
         @Builder
