@@ -118,12 +118,12 @@ function App() {
 
   const [keywordsButton, setKeywordsButton] = useState([]);
 
+  const [bestRestaurant, setBestRestaurant] = useState([]);
+
 
 
   Modal.setAppElement('#root');
 
-
-  // const googleApi = process.env.REACT_APP_GOOGLE_MAP_API
 
 
   const handleInputChange = (event) => {
@@ -188,7 +188,17 @@ function App() {
   }
 
   const handleKeywordsButton = (keyword) => {
-    
+    (async () => {
+      try {
+        const response = await client.get(url + '/search/best/' + keyword);
+        console.log(response.data);
+        setRestaurants(null);
+        setBestRestaurant(response.data);
+       
+      } catch(error) {
+        console.error(error);
+      }
+    })();
   }
 
   
@@ -239,12 +249,6 @@ function App() {
           <p>latitude: {position.lat}</p>
           <p>longitude: {position.lng}</p>
         </div>
-        
-        <br />
-        <br />
-        <br />
-        <br />
-        
 
       </div>
       <div style={keywordsButtonContainerStyle}>
@@ -253,7 +257,7 @@ function App() {
             <>
             {
               keywordsButton.map( (keywordButton, index) => (
-                <button style={keywordsButtonStyle} key={index}>{keywordButton}</button>
+                <button style={keywordsButtonStyle} key={index} onClick={() => handleKeywordsButton(keywordButton)}>{keywordButton}</button>
               ))
             }
             </>
@@ -269,6 +273,7 @@ function App() {
           url={url}
           client={client}
           keyword={keyword}
+          bestRestaurant={bestRestaurant}
           />
       </div>
 

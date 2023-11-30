@@ -12,7 +12,7 @@ import { Feature } from 'ol';
 import { Style, Icon, Stroke } from 'ol/style';
 import { LineString } from 'ol/geom';
 
-const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants, client, url, keyword}) => {
+const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants, client, url, keyword, bestRestaurant}) => {
   const mapRef = useRef();
   const [map, setMap] = useState();
 
@@ -28,6 +28,10 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
   const [popupX, setPopupX] = useState(0);
   const [popupY, setPopupY] = useState(0);
   const [popupContent, setPopupContent] = useState({});
+
+  const bestRestaurantRouteColor = ["blue", "red", "purple"]
+  const [bestPath, setBestPath] = useState(null);
+  const [bestPathFeature, setBestPathFeature] = useState([]);
 
   useEffect(() => {
     // 지도 초기화
@@ -79,6 +83,28 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
           vectorSource.addFeature(marker);
           markersArray.push([marker, result]);
         })
+    } else if(bestRestaurant !== null && bestRestaurant !== undefined && bestRestaurant.length !== 0) {
+      
+        const results = bestRestaurant;
+        const bp = [];
+
+        results.forEach( (result, index) => {
+          const marker = new Feature({
+            geometry: new Point(fromLonLat([result.result.geometry.location.lng, result.result.geometry.location.lat]))
+          });
+          marker.setStyle(new Style({
+            image: new Icon({
+              src: 'https://openlayers.org/en/latest/examples/data/icon.png'
+            })
+          }));
+          vectorSource.addFeature(marker);
+          markersArray.push([marker, result.result]);
+          bp.push(result.result.graphHopperResponse.paths[0]);
+          
+        })
+
+        setBestPath(bp);
+
     }
 
     setMarkers(markersArray);
@@ -153,7 +179,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
         initialMap.un('singleclick', handleClick);
       }
     };
-  }, [position, restaurants]);
+  }, [position, restaurants, bestRestaurant]);
 
 
   useEffect(() => {
@@ -193,9 +219,6 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
           
           const feature = map.forEachFeatureAtPixel(event.pixel, (feature) => feature);
           if(feature === currentPathFeature) {
-            // const coordinate = event.coordinate;
-            // overlay.setPosition(coordinate);
-            const mapContainerPosition = map.getTargetElement().getBoundingClientRect();
             setPopupVisible(true);
             setPopupX(event.originalEvent.clientX);
             setPopupY(event.originalEvent.clientY);
@@ -209,11 +232,41 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
           }
         } else {
           setPopupVisible(false);
-         
         }
       });
     }
   }, [currentPathFeature]);
+
+  useEffect(() => {
+    if(bestPath && bestPath.length !== 0) {
+      const routeFeature = []; 
+
+      bestPath.forEach( (bp, index) => {
+        const pathCoordinates = bp.points.coordinates;
+        const olCoordinates = pathCoordinates.map(coord => fromLonLat(coord));
+        const lineString = new LineString(olCoordinates);
+
+        const lineStyle = new Style({
+                    stroke: new Stroke({
+                        color: bestRestaurantRouteColor[index],
+                        width: 5+index
+                    })
+                });
+
+        const lineFeature = new Feature({
+                    geometry: lineString
+                });
+
+        lineFeature.setStyle(lineStyle);
+        vectorSourceSave.addFeature(lineFeature);
+
+        routeFeature.push(lineFeature);
+      })
+
+      setBestPathFeature(routeFeature);
+      setVectorSourceSave(vectorSourceSave);
+    }
+  }, [bestPath]);
 
   return <>
     <div ref={mapRef} style={{ width: '100%', height: '400px' }}></div>

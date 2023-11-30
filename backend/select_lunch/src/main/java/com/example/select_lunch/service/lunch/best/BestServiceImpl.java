@@ -68,7 +68,10 @@ public class BestServiceImpl implements BestService{
         });
 
         log.info("최상위 평점 3개의 가게 반환");
-        return new ArrayList<>(validEntities.subList(0, 3));
+        if(validEntities.size() >= 3)
+            return new ArrayList<>(validEntities.subList(0, 3));
+        else
+            return validEntities;
     }
     
 }
