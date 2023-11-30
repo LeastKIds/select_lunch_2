@@ -285,8 +285,25 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
     }
   }, [bestPath]);
 
+  // const routeAnimation = () => {
+
+  //   let animating = false;
+  //   let distance = 0;
+  //   let lastTime;
+
+  //   const startMarker = new Feature({
+  //     type: 'icon',
+  //     geometry: new Point(route.getFirstCoordinate()),
+  //   });
+  //   const position = startMarker.getGeometry().clone();
+
+  //   animating = true;
+  //   lastTime = Date.now();
+
+  // }  
+
   return <>
-    <div ref={mapRef} style={{ width: '100%', height: '400px' }}></div>
+    <div ref={mapRef} style={{ width: '100%', height: '600px' }}></div>
     <Popup visible={popupVisible} x={popupX} y={popupY} content={popupContent} />
   </>
 };

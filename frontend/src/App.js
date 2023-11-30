@@ -9,6 +9,8 @@ import CustomMap from './component/map/CustomMap'
 import tomatoImg from './img/tomato.jpg'
 import decayTomatoImg from './img/decay_tomato.png'
 import greenTomato from './img/green_tomato.png'
+import { Paper, TextField } from "@mui/material";
+import SearchCard from "./component/map/SearchCard";
 
 
 function App() {
@@ -237,7 +239,7 @@ function App() {
 
   return (
     <div className="App">
-      <div>
+      {/* <div>
         <input type="text" style={inputStyle} placeholder="여기에 입력하세요" value={address} onChange={handleAddressInputChange} />
         <button style={buttonStyle} onClick={handleGeocoding}>주소</button>
         <button style={buttonStyle} onClick={handleInitAddress}>초기값</button>
@@ -250,7 +252,8 @@ function App() {
           <p>longitude: {position.lng}</p>
         </div>
 
-      </div>
+      </div> */}
+      <SearchCard />
       <div style={keywordsButtonContainerStyle}>
         {
           keywordsButton &&
