@@ -24,6 +24,11 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
 
   const [pointermove, setPointermove] = useState(false);
 
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupX, setPopupX] = useState(0);
+  const [popupY, setPopupY] = useState(0);
+  const [popupContent, setPopupContent] = useState({});
+
   useEffect(() => {
     // 지도 초기화
     const initialMap = new Map({
@@ -92,16 +97,6 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
 
         markersArray.forEach(async clickMarker => {
           if(clickMarker[0] === feature) {
-            
-            // const routeResponse = await client.post(url + '/mapRoute/minDistances', {
-            //   startLat: position.lat,
-            //   startLng: position.lng,
-            //   endLat: clickMarker[1].geometry.location.lat,
-            //   endLng: clickMarker[1].geometry.location.lng
-            // });
-            // console.log(routeResponse.data);
-            // setPath(routeResponse.data);
-
             const response = await client.post(url + '/search/place', {
               place_id: clickMarker[1].place_id, 
               keyword: keyword,
@@ -114,7 +109,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
             handleSetModalData(result);
             setPath(result.graphHopperResponse);
             console.log(result);
-            // handleModalIsOpen(true);
+           
 
             
           }
@@ -166,31 +161,6 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
       vectorSourceSave.removeFeature(currentPathFeature);
     }
 
-    if(!pointermove && map) {
-      const overlay = new ol.Overlay({
-        element: document.getElementById('popup'),
-        positioning: 'bottom-center',
-        offset: [0, -10]
-      });
-      map.addOverlay(overlay);
-  
-      map.on('pointermove', (event) => {
-        if (map.hasFeatureAtPixel(event.pixel)) {
-          const feature = map.forEachFeatureAtPixel(event.pixel, (feature) => feature);
-    
-          if (feature === currentPathFeature) {
-            const coordinate = event.coordinate;
-            overlay.setPosition(coordinate);
-    
-            // 정보를 오버레이에 표시 (예: 경로 정보)
-            console.log("check");
-          }
-        } else {
-          console.log("not");
-        }
-      });
-    }
-
     if(path) {
       const pathCoordinates = path.paths[0].points.coordinates;
       const olCoordinates = pathCoordinates.map(coord => fromLonLat(coord));
@@ -215,7 +185,71 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
     
   }, [path]);
 
-  return <div ref={mapRef} style={{ width: '100%', height: '400px' }}></div>;
+  useEffect(() => {
+    if(!pointermove && map) {
+  
+      map.on('pointermove', (event) => {
+        if(map.hasFeatureAtPixel(event.pixel)) {
+          
+          const feature = map.forEachFeatureAtPixel(event.pixel, (feature) => feature);
+          if(feature === currentPathFeature) {
+            // const coordinate = event.coordinate;
+            // overlay.setPosition(coordinate);
+            const mapContainerPosition = map.getTargetElement().getBoundingClientRect();
+            setPopupVisible(true);
+            setPopupX(event.originalEvent.clientX);
+            setPopupY(event.originalEvent.clientY);
+            setPopupContent({
+              distance: path.paths[0].distance,
+              time: path.paths[0].time
+            });
+            
+          } else {
+            setPopupVisible(false);
+          }
+        } else {
+          setPopupVisible(false);
+         
+        }
+      });
+    }
+  }, [currentPathFeature]);
+
+  return <>
+    <div ref={mapRef} style={{ width: '100%', height: '400px' }}></div>
+    <Popup visible={popupVisible} x={popupX} y={popupY} content={popupContent} />
+  </>
 };
 
 export default CustomMap;
+
+
+const Popup = ({ visible, x, y, content }) => {
+  if (!visible) return null;
+
+  const style = {
+    position: 'absolute',
+    left: `${x}px`,
+    top: `${y}px`,
+    // 추가적인 스타일링
+    backgroundColor: 'white', // 하얀색 배경
+    border: '1px solid black', // 검정색 테두리
+    padding: '10px', // 안쪽 여백
+    borderRadius: '10px', // 모서리 둥글게
+    boxShadow: '0px 0px 10px rgba(0,0,0,0.5)', // 그림자 효과
+  };
+
+  const formatMilliseconds = (milliseconds) => {
+    let totalSeconds = Math.floor(milliseconds / 1000);
+    let minutes = Math.floor(totalSeconds / 60);
+    let seconds = totalSeconds % 60;
+
+    // 두 자리 숫자로 포맷
+    minutes = String(minutes).padStart(2, '0');
+    seconds = String(seconds).padStart(2, '0');
+
+    return `${minutes}:${seconds}`;
+  }
+
+  return <div style={style}><p>거리: {content.distance}M <br/> 시간: {formatMilliseconds(content.time)}</p></div>;
+};
