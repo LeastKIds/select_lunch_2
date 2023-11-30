@@ -54,7 +54,7 @@ public class LunchServiceImpl implements LunchService{
     @Override
     public SearchResponse searchOfCurrentLocation(String keyword, double lat, double lng, String next_page_token) {
 
-        Optional<String>optionalFindByKeywords = keywordsRepository.findByKeywords(keyword);
+        Optional<KeywordsEntity>optionalFindByKeywords = keywordsRepository.findByKeywords(keyword);
         if(!optionalFindByKeywords.isPresent()) {
             log.info("새로운 키워드");
             keywordsRepository
@@ -62,9 +62,16 @@ public class LunchServiceImpl implements LunchService{
                     KeywordsEntity
                         .builder()
                         .keywords(keyword)
+                        .counts(0)
                         .build()
                     );
             log.info("키워드 저장");
+        } else {
+            KeywordsEntity keywordsEntity = optionalFindByKeywords.get();
+            int count = keywordsEntity.getCounts();
+            keywordsEntity.setCounts(count+1);
+            keywordsRepository.save(keywordsEntity);
+            log.info("키워드 카운트 증가 + 1");
         }
 
 
@@ -271,8 +278,13 @@ public class LunchServiceImpl implements LunchService{
     @Override
     public SearchKeywordsResponse searchKeywords() {
 
-        ArrayList<String> keywordsArrayList = keywordsRepository
-                                                .findAll()
+        Optional<ArrayList<KeywordsEntity>> optionalArrayListKeywordsEntity = keywordsRepository.findAllByOrderByCountsDesc();
+        if(!optionalArrayListKeywordsEntity.isPresent())
+            return null;
+
+
+        ArrayList<String> keywordsArrayList = optionalArrayListKeywordsEntity
+                                                .get()
                                                 .stream()
                                                 .map(
                                                     KeywordsEntity::getKeywords
@@ -281,10 +293,16 @@ public class LunchServiceImpl implements LunchService{
                                                     Collectors
                                                         .toCollection(ArrayList::new)
                                                 );
-        return SearchKeywordsResponse
-                .builder()
-                .keywords(keywordsArrayList)
-                .build();
+        if(keywordsArrayList.size() >=3)
+            return SearchKeywordsResponse
+                    .builder()
+                    .keywords(new ArrayList<>(keywordsArrayList.subList(0, 3)))
+                    .build();
+        else
+            return SearchKeywordsResponse
+                    .builder()
+                    .keywords(keywordsArrayList)
+                    .build();
 
     }
     

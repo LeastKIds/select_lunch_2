@@ -15,7 +15,7 @@ import SearchCard from "./component/map/SearchCard";
 
 function App() {
 
-  const url = "https://a15d-126-44-208-85.ngrok-free.app"
+  const url = "https://836f-126-44-208-85.ngrok-free.app"
 
   const client = axios.create({
     withCredentials: true,
@@ -91,6 +91,9 @@ function App() {
 
   const [keyword, setkeyword] = useState('');
   const [restaurants, setRestaurants] = useState(null);
+  const handleSetRestaurants = (newRestaurants) => {
+    setRestaurants(newRestaurants);
+  }
   
   const [latitude, setLatitude] = useState(35.67642344101245);
   const [longitude, setLongitude] = useState(139.65002534640476);
@@ -121,6 +124,9 @@ function App() {
   const [keywordsButton, setKeywordsButton] = useState([]);
 
   const [bestRestaurant, setBestRestaurant] = useState([]);
+  const handleSetBestRestaurant = (newBestRestaurant) => {
+    setBestRestaurant(newBestRestaurant);
+  }
 
 
 
@@ -218,14 +224,14 @@ function App() {
       );
     }
 
-    (async () => {
-      try {
-        const response = await client.get(url + '/search/keywords');
-        setKeywordsButton(response.data.keywords)
-      } catch(error) {
-        console.error(error);
-      }
-    })();
+    // (async () => {
+    //   try {
+    //     const response = await client.get(url + '/search/keywords');
+    //     setKeywordsButton(response.data.keywords)
+    //   } catch(error) {
+    //     console.error(error);
+    //   }
+    // })();
 
   }, []);
 
@@ -253,8 +259,14 @@ function App() {
         </div>
 
       </div> */}
-      <SearchCard />
-      <div style={keywordsButtonContainerStyle}>
+      <SearchCard props={{client: client,
+         url: url, 
+         restaurants: restaurants,
+         handleSetRestaurants: handleSetRestaurants,
+         handleSetBestRestaurant: handleSetBestRestaurant,
+         position: position
+         }} />
+      {/* <div style={keywordsButtonContainerStyle}>
         {
           keywordsButton &&
             <>
@@ -265,7 +277,7 @@ function App() {
             }
             </>
         }
-      </div>
+      </div> */}
       
       <div>
         <CustomMap 
@@ -280,7 +292,7 @@ function App() {
           />
       </div>
 
-      {
+      {/* {
         restaurants && restaurants.next_page_token !== null &&
         <div style={{display: "flex", justifyContent: "Center", marginTop: "20px"}}>
           <button style={buttonStyle} onClick={handleNextPage}>
@@ -288,100 +300,17 @@ function App() {
           </button>
         </div>
 
-      }
+      } */}
 
-      <div>
+      {/* <div>
         {
           modalData && 
           <>
             <RestaurantBoxComponent modalData={modalData} client={client} url={url} handleRestaurantBoxSetModalData={handleRestaurantBoxSetModalData}/>
           </>
         }
-      </div>
+      </div> */}
         
-
-      <Modal 
-        isOpen={modalIsOpen}
-        
-        style={{
-          content: {
-            width: '500px',
-            height: '700px',
-            margin: 'auto', // 모달을 화면 중앙에 위치시킵니다.
-            display: 'flex', // Flexbox를 사용하여 내용을 정렬합니다.
-            flexDirection: 'column', // 아이템을 세로로 정렬합니다.
-            justifyContent: 'space-between' // 상단과 하단의 컨텐츠를 분리합니다.
-          }
-        }}
-      >
-        <h1>name: {modalData.name}</h1>
-        <p>current open: {modalData.current_opening_hours?.open_now !== null ? modalData.current_opening_hours?.open_now.toString() : "ignorance"}</p>
-        {
-          modalData.current_opening_hours?.weekday_text &&
-          <>
-            {
-              modalData.current_opening_hours.weekday_text.map( (date, index) => 
-                <p key={index}>{date}</p>
-              )
-            }
-          </>
-        }
-        <p>address: {modalData.formatted_address}</p>
-        <p>telephone: {modalData.formatted_phone_number}</p>
-        <p>delivery: {modalData.delivery ? modalData.delivery.toString() : 'ignorance'}</p>
-        <p>takeout: {modalData.takeout ? modalData.takeout.toString() : 'ignorance'}</p>
-        <p>price_level: {modalData.price_level}</p>
-        <p>map: {modalData.url}</p>
-        <p>website: {modalData.website}</p>
-
-        <p>keyward: {modalData.types ? modalData.types.join(', ') : 'ignorance'}</p>
-        <button onClick={() => setReviewOpen(true)}>review open</button>
-        {
-          reviewOpen && 
-          <div>
-            <img src={
-              modalData.reviewEvaluation === "POSITIVE" ? tomatoImg :
-              modalData.reviewEvaluation === "NEGATIVE" ? decayTomatoImg : greenTomato 
-              } style={{width: "100px"}}/>
-
-            {
-              modalData.reviews.map( (review, index) => 
-              <div key={index}>
-                <h3>{review.author_name}</h3>
-                <p>{review.text}</p>
-                <button
-                  onClick={async () => {
-                    const response = await client.post(url + '/search/reviews/translation', {text: review.text})
-                    console.log(response.data.translationText);
-                    setModalData(prevObject => ({
-                      ...prevObject, 
-                      reviews: prevObject.reviews.map(item => item.text === review.text ? {...item, translationJp: response.data.translationText} : item)
-                    }))
-                  }}
-                >日本語で機械翻訳</button>
-                {
-                  review.translationJp &&
-                  <p>{review.translationJp}</p>
-                }
-
-
-                <p>{review.relative_time_description}</p>
-                <p>url: {review.author_url}</p>
-                
-              </div>
-              )
-            }
-            <button onClick={() => setReviewOpen(false)}>review close</button>
-          </div>
-        }
-
-        <button onClick={()=> setModalIsOpen(false)}>Modal Close</button>
-      </Modal>
-
-
-      <div style={{textAlign: "center"}}>
-        <p>tomato: <a href="https://kr.freepik.com/free-vector/sticker-design-with-tomato-isolated_16460149.htm#query=tomato&position=2&from_view=keyword&track=sph&uuid=438d58b3-3343-43fb-997f-9b8a7a818a29">작가 brgfx</a> 출처 Freepik</p>
-      </div>
     </div>
   );
 }

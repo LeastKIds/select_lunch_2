@@ -303,7 +303,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
   // }  
 
   return <>
-    <div ref={mapRef} style={{ width: '100%', height: '600px' }}></div>
+    <div ref={mapRef} style={{ width: '100%', height: "100vh" }}></div>
     <Popup visible={popupVisible} x={popupX} y={popupY} content={popupContent} />
   </>
 };

@@ -20,4 +20,5 @@ public class KeywordsEntity {
     private String id;
 
     private String keywords;
+    private Integer counts;
 }

@@ -2,22 +2,24 @@ import { Paper } from "@mui/material";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Slider from '@mui/material/Slider';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const SearchCard = () => {
+const SearchCard = ({props}) => {
 
     const [paperOpacity, setPaperOpacity] = useState(100);
+    const [keywordsButton, setKeywordsButton] = useState([]);
+    const [keyword, setKeyword] = useState('');
 
     const styles = {
         paperStyle: {
             width: "300px",
-            // height: "300px",
+            
             position: "absolute",
             zIndex: "999",
             right: "20px",
             top: "20px",
             padding: "10px",
-            opacity: paperOpacity * 0.01
+            opacity: paperOpacity * 0.01 + 0.4
         },
 
     }
@@ -25,19 +27,103 @@ const SearchCard = () => {
     const handle = {
         paperSliderOpacityHandler: (event, newvalue) => {
             setPaperOpacity(newvalue)
+        },
+        keywordsSearchTextFieldHandler: (event) => {
+            setKeyword(event.target.value);
+        },
+        keywordsSearchButtonHandler: () => {
+            (async () => {
+                const response = await props.client.post(props.url + '/search/' + keyword, {
+                    lat: props.position.lat,
+                    lng: props.position.lng,
+                    next_page_token: null
+                });
+                console.log(response.data);
+                props.handleSetRestaurants(response.data);    
+            })();
+
+            
+        },
+        keywordsButtonHandler: (k) => {
+            (async () => {
+                try {
+                    const response = await props.client.get(props.url + '/search/best/' + k);
+                    props.handleSetRestaurants(null);
+                    props.handleSetBestRestaurant(response.data);
+                } catch(error) {
+                    console.log(error);
+                }
+            })();
+        },
+
+        nextPageButtonhandler: () => {
+            (async () => {
+                try{
+                    const response = await props.client.post(props.url + '/search/' + keyword, {
+                        lat: 0.0,
+                        lng: 0.0,
+                        next_page_token: props.restaurants.next_page_token
+                    })
+                    props.handleSetRestaurants(response.data);
+                } catch(error) {
+                    console.error(error);
+                }
+            })();
         }
     }
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const response = await props.client.get(props.url + '/search/keywords');
+                setKeywordsButton(response.data.keywords);
+            } catch(error) {
+                console.error(error);
+            }
+        })();
+    }, []);
 
     return <Paper elevation={6} style={styles.paperStyle}>
             <h1 style={{margin: 0, textAlign: "center"}}>Lunch!</h1>
             <div>
-                <TextField label="Keyword" style={{width: "205px"}} />
-                <Button variant="contained" size="medium" style={{height: "55px", marginLeft: "5px"}}>
+                <TextField label="Keyword" style={{width: "205px"}} value={keyword} onChange={handle.keywordsSearchTextFieldHandler}/>
+                <Button variant="contained" 
+                    size="medium" 
+                    onClick={handle.keywordsSearchButtonHandler}
+                    style={{height: "55px", marginLeft: "5px"}}>
                     Search
                 </Button>
             </div>
-            <div style={{marginTop: "10px"}}>
-                <Button variant="contained" color="success" style={{borderRadius: "50px", width: "50px", height: "30px"}}>test</Button>
+            {
+                (props.restaurants && props.restaurants.next_page_token) ?
+                <div style={{paddingTop: "5px"}} onClick={handle.nextPageButtonhandler}>
+                    <Button variant="outlined">
+                        Next Page
+                    </Button>
+                </div> : 
+                <div style={{paddingTop: "5px"}}>
+                    <Button variant="outlined" disabled>
+                        Next Page
+                    </Button>
+                </div>
+            }
+            <div style={{marginTop: "10px", display: "flex"}}>
+                {
+                    (keywordsButton && keywordsButton.length !==0) &&
+                    <>
+                        {
+                            keywordsButton.map( (keywordButton, index) => (
+                                <Button variant="contained" 
+                                    key={index}
+                                    color="success" 
+                                    onClick={() => handle.keywordsButtonHandler(keywordButton)}
+                                    style={{borderRadius: "50px", height: "30px", marginRight: "5px"}}>
+                                    {keywordButton}
+                                </Button>
+                            ))
+                        }
+                    </>
+                }
             </div>
             <div style={{display: "flex", alignContent: "center", padding: "10px"}}>
                 <p style={{margin: 0, paddingRight: "10px"}}>opacity</p>
