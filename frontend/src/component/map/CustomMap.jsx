@@ -195,7 +195,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
       const lineStyle = new Style({
                   stroke: new Stroke({
                       color: 'blue',
-                      width: 5
+                      width: 7
                   })
               });
 
@@ -216,7 +216,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
   
       map.on('pointermove', (event) => {
         if(map.hasFeatureAtPixel(event.pixel)) {
-          
+          console.log("test");
           const feature = map.forEachFeatureAtPixel(event.pixel, (feature) => feature);
           if(feature === currentPathFeature) {
             setPopupVisible(true);
@@ -227,6 +227,18 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
               time: path.paths[0].time
             });
             
+          } else if (bestPathFeature && bestPathFeature.includes(feature)) {
+            bestPathFeature.forEach( (bp, index) => {
+              if(bp === feature) {
+                setPopupVisible(true);
+                setPopupX(event.originalEvent.clientX);
+                setPopupY(event.originalEvent.clientY);
+                setPopupContent({
+                  distance: bestPath[index].distance,
+                  time: bestPath[index].time
+                });
+              }
+            })
           } else {
             setPopupVisible(false);
           }
@@ -235,7 +247,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
         }
       });
     }
-  }, [currentPathFeature]);
+  }, [currentPathFeature, bestPathFeature]);
 
   useEffect(() => {
     if(bestPath && bestPath.length !== 0) {
@@ -249,7 +261,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
         const lineStyle = new Style({
                     stroke: new Stroke({
                         color: bestRestaurantRouteColor[index],
-                        width: 5+index
+                        width: 7 + index
                     })
                 });
 
