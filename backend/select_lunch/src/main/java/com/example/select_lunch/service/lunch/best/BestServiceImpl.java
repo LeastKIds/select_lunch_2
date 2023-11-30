@@ -7,6 +7,7 @@ import com.example.select_lunch.jpa.lunch.restaurants.RestaurantsRepository;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import java.lang.Math;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class BestServiceImpl implements BestService{
     private final RestaurantsRepository restaurantsRepository;
 
@@ -23,7 +25,7 @@ public class BestServiceImpl implements BestService{
         
         Optional<ArrayList<RestaurantsEntity>> optionalArrayListRestaurantsEntity = restaurantsRepository.findByKeywordsContaining(keyword);
         if(!optionalArrayListRestaurantsEntity.isPresent() || optionalArrayListRestaurantsEntity.get().isEmpty()) {
-            System.out.println("데이터 없음!");
+            log.error("데이터 없음");
             return null;
         } 
         
@@ -33,6 +35,7 @@ public class BestServiceImpl implements BestService{
         });
         
 
+        log.info("평점 계산중");
         int size = arrayListRestaurantsEntities.size() - 1;
         long minTime = arrayListRestaurantsEntities.get(size).getResult().getGraphHopperResponse().getPaths().get(0).getTime();
         long average = 0;
@@ -64,6 +67,7 @@ public class BestServiceImpl implements BestService{
             return array2.getPoint().compareTo(array1.getPoint());
         });
 
+        log.info("최상위 평점 3개의 가게 반환");
         return new ArrayList<>(validEntities.subList(0, 3));
     }
     
