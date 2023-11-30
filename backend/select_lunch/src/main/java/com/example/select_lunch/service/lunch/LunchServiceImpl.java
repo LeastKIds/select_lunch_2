@@ -150,6 +150,7 @@ public class LunchServiceImpl implements LunchService{
 
         RestaurantsEntity restaurantsEntity = restTemplate.getForObject(url, RestaurantsEntity.class);
         
+
         RestaurantsResult restaurantsResult = restaurantsEntity.getResult();
         restaurantsResult.setPlaceId(searchPlaceRequest.getPlace_id());
         restaurantsEntity.setUpdateTime(LocalDate.now());

@@ -123,8 +123,9 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
 
         markersArray.forEach(async clickMarker => {
           if(clickMarker[0] === feature) {
+            
             const response = await client.post(url + '/search/place', {
-              place_id: clickMarker[1].place_id, 
+              place_id: clickMarker[1].place_id !== undefined ? clickMarker[1].place_id : clickMarker[1].placeId, 
               keyword: keyword,
               startLat: position.lat,
               startLng: position.lng,
@@ -142,13 +143,17 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
         })
       }
 
+
       initialMap.forEachFeatureAtPixel(event.pixel, async (feature, layer) => {
         clickedOnFeature = true;
         // 여기서 마커 클릭 처리 로직을 추가할 수 있습니다.
         if(currentMarker === feature) {
           console.log("현재 위치: ", feature);
         } else {
-          await handleMarkerClick(markersArray, feature);
+          
+            await handleMarkerClick(markersArray, feature);
+          
+
         }
       });
     

@@ -194,7 +194,7 @@ function App() {
         console.log(response.data);
         setRestaurants(null);
         setBestRestaurant(response.data);
-       
+        setkeyword(keyword);
       } catch(error) {
         console.error(error);
       }
