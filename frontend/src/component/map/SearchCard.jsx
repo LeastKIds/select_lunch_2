@@ -3,12 +3,22 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Slider from '@mui/material/Slider';
 import { useEffect, useState } from "react";
+import { green } from '@mui/material/colors';
+import Icon from '@mui/material/Icon';
+import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
 
 const SearchCard = ({props}) => {
 
     const [paperOpacity, setPaperOpacity] = useState(100);
     const [keywordsButton, setKeywordsButton] = useState([]);
     const [keyword, setKeyword] = useState('');
+    const [isOption, setIsOption] = useState(false);
+
+    const [isLat, setIsLat] = useState(35.6667076);
+    const [isLatError, setIsLatError] = useState(false);
+    const [isLng, setIsLng] = useState(139.7143023);
+    const [isLngError, setIsLngError] = useState(false);
+    const [isPosition, setIsPosition] = useState(false);
 
     const styles = {
         paperStyle: {
@@ -69,6 +79,30 @@ const SearchCard = ({props}) => {
                     console.error(error);
                 }
             })();
+        },
+
+        latInputErrorHandler: (event) => {
+            const { value } = event.target;
+            setIsLat(value);  
+            if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                setIsLatError(false);
+                setIsLat(value);    
+            } else {
+                setIsLatError(true);
+            }
+        },
+        lngInputErrorHandler: (event) => {
+            const { value } = event.target;
+            setIsLng(value);
+            if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                setIsLngError(false);
+                    
+            } else {
+                setIsLngError(true);
+            }
+        },
+        setIsPositionHandler: () => {
+            props.handleSetPosition({lat: isLat, lng: isLng});
         }
     }
 
@@ -82,6 +116,13 @@ const SearchCard = ({props}) => {
             }
         })();
     }, []);
+
+    useEffect(() => {
+        if(!isLatError && !isLatError)
+            setIsPosition(false);
+        else
+            setIsPosition(true);
+    }, [isLatError, isLngError])
 
     return <Paper elevation={6} style={styles.paperStyle}>
             <h1 style={{margin: 0, textAlign: "center"}}>Lunch!</h1>
@@ -125,10 +166,26 @@ const SearchCard = ({props}) => {
                     </>
                 }
             </div>
-            <div style={{display: "flex", alignContent: "center", padding: "10px"}}>
-                <p style={{margin: 0, paddingRight: "10px"}}>opacity</p>
-                <Slider defaultValue={paperOpacity} aria-label="Default" valueLabelDisplay="auto" style={{width: "200px"}} onChange={handle.paperSliderOpacityHandler}/>
+            <SettingsSuggestIcon color="primary" style={{marginTop: "10px"}} onClick={() => setIsOption(!isOption)}>add_circle</SettingsSuggestIcon>
+            <div style={{alignContent: "center", maxHeight: isOption ? "300px" : "0px", overflow: 'hidden', transition: 'max-height 0.5s ease-in-out', marginTop: "10px"}}>
+                <div style={{display: "flex", }}>
+                    <p style={{margin: 0, paddingRight: "10px"}}>opacity</p>
+                    <Slider defaultValue={paperOpacity} aria-label="Default" valueLabelDisplay="auto" style={{width: "200px"}} onChange={handle.paperSliderOpacityHandler}/>
+                </div>
+                
+                <div>
+                    
+                    <div style={{display: "flex", alignItems: "center"}}>
+                        <TextField id="standard-basic" label="lat" variant="standard" style={{width: "100px", margin: "5px"}} error={isLatError} value={isLat} onChange={handle.latInputErrorHandler}/>
+                        <TextField id="standard-basic" label="lng" variant="standard" style={{width: "100px", margin: "5px"}} error={isLngError} value={isLng} onChange={handle.lngInputErrorHandler}/>
+                        <Button variant="outlined" color="error" style={{height: "25px"}} disabled={isPosition} onClick={handle.setIsPositionHandler}>
+                            이동
+                        </Button>
+                    </div>
+                    
+                </div>
             </div>
+            <div style={{paddingBottom: "10px"}}></div>
         </Paper>
     
 }

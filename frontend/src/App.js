@@ -11,11 +11,12 @@ import decayTomatoImg from './img/decay_tomato.png'
 import greenTomato from './img/green_tomato.png'
 import { Paper, TextField } from "@mui/material";
 import SearchCard from "./component/map/SearchCard";
+import SwipeableEdgeDrawer from "./component/map/SwipeableEdgeDrawer";
 
 
 function App() {
 
-  const url = "https://836f-126-44-208-85.ngrok-free.app"
+  const url = "https://d0d5-126-44-208-85.ngrok-free.app"
 
   const client = axios.create({
     withCredentials: true,
@@ -224,15 +225,6 @@ function App() {
       );
     }
 
-    // (async () => {
-    //   try {
-    //     const response = await client.get(url + '/search/keywords');
-    //     setKeywordsButton(response.data.keywords)
-    //   } catch(error) {
-    //     console.error(error);
-    //   }
-    // })();
-
   }, []);
 
   useEffect(() => {
@@ -245,39 +237,15 @@ function App() {
 
   return (
     <div className="App">
-      {/* <div>
-        <input type="text" style={inputStyle} placeholder="여기에 입력하세요" value={address} onChange={handleAddressInputChange} />
-        <button style={buttonStyle} onClick={handleGeocoding}>주소</button>
-        <button style={buttonStyle} onClick={handleInitAddress}>초기값</button>
-      </div>
-      <div style={containerStyle}>
-        <input type="text" style={inputStyle} placeholder="여기에 입력하세요" value={keyword} onChange={handleInputChange} />
-        <button style={buttonStyle} onClick={handleButton}>클릭</button>
-        <div>
-          <p>latitude: {position.lat}</p>
-          <p>longitude: {position.lng}</p>
-        </div>
-
-      </div> */}
       <SearchCard props={{client: client,
          url: url, 
          restaurants: restaurants,
          handleSetRestaurants: handleSetRestaurants,
          handleSetBestRestaurant: handleSetBestRestaurant,
-         position: position
+         position: position,
+         handleSetPosition: handleSetPosition
          }} />
-      {/* <div style={keywordsButtonContainerStyle}>
-        {
-          keywordsButton &&
-            <>
-            {
-              keywordsButton.map( (keywordButton, index) => (
-                <button style={keywordsButtonStyle} key={index} onClick={() => handleKeywordsButton(keywordButton)}>{keywordButton}</button>
-              ))
-            }
-            </>
-        }
-      </div> */}
+
       
       <div>
         <CustomMap 
@@ -292,6 +260,10 @@ function App() {
           />
       </div>
 
+      {
+        (restaurants && restaurants.results.length !== 0) &&
+        <SwipeableEdgeDrawer props={{restaurants: restaurants}}/>
+      }
       {/* {
         restaurants && restaurants.next_page_token !== null &&
         <div style={{display: "flex", justifyContent: "Center", marginTop: "20px"}}>
