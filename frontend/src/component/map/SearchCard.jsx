@@ -3,8 +3,6 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Slider from '@mui/material/Slider';
 import { useEffect, useState } from "react";
-import { green } from '@mui/material/colors';
-import Icon from '@mui/material/Icon';
 import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
 
 const SearchCard = ({props}) => {
@@ -49,10 +47,9 @@ const SearchCard = ({props}) => {
                     next_page_token: null
                 });
                 console.log(response.data);
-                props.handleSetRestaurants(response.data);    
+                props.handleSetRestaurants(response.data);
+                props.setRestaurantHandler(null);
             })();
-
-            
         },
         keywordsButtonHandler: (k) => {
             (async () => {
@@ -60,6 +57,7 @@ const SearchCard = ({props}) => {
                     const response = await props.client.get(props.url + '/search/best/' + k);
                     props.handleSetRestaurants(null);
                     props.handleSetBestRestaurant(response.data);
+                    console.log(response.data);
                 } catch(error) {
                     console.log(error);
                 }

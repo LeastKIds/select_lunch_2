@@ -252,7 +252,9 @@ function App() {
          handleSetRestaurants: handleSetRestaurants,
          handleSetBestRestaurant: handleSetBestRestaurant,
          position: position,
-         handleSetPosition: handleSetPosition
+         handleSetPosition: handleSetPosition,
+         setRestaurantHandler: setRestaurantHandler,
+         handleSetRestaurants: handleSetRestaurants
          }} />
 
       

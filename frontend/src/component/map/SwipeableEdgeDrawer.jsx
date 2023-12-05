@@ -67,8 +67,6 @@ const SwipeableEdgeDrawer = ({props}) => {
             
     }, [props.restaurants]);
     useEffect(() => {
-        console.log("check")
-        console.log(props.restaurant)
         if(props.restaurant !== null && props.restaurant !== undefined) {
             handler.openDrawerHandler();
         }
