@@ -12,7 +12,7 @@ import { Feature } from 'ol';
 import { Style, Icon, Stroke } from 'ol/style';
 import { LineString } from 'ol/geom';
 
-const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants, client, url, keyword, bestRestaurant, path, setPathHandler}) => {
+const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants, client, url, keyword, bestRestaurant, path, setPathHandler, setRestaurantHandler, openDrawer, setOpenDrawerHandler}) => {
   const mapRef = useRef();
   const [map, setMap] = useState();
 
@@ -47,6 +47,7 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
         zoom: 16,
       }),
     });
+
 
     const vectorSource = new VectorSource();
 
@@ -134,12 +135,12 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
             })
             const result = response.data.result;
             handleSetModalData(result);
-            console.log(restaurants);
+            setRestaurantHandler(result);
             setPathHandler(result.graphHopperResponse);
-            console.log(result);
-           
+            console.log(openDrawer);
+            setOpenDrawerHandler(false);
 
-            
+            console.log(openDrawer);
           }
         })
       }
@@ -222,7 +223,6 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
   
       map.on('pointermove', (event) => {
         if(map.hasFeatureAtPixel(event.pixel)) {
-          console.log("test");
           const feature = map.forEachFeatureAtPixel(event.pixel, (feature) => feature);
           if(feature === currentPathFeature) {
             setPopupVisible(true);

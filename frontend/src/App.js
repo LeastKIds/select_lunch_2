@@ -132,6 +132,15 @@ function App() {
     setPath(newPath);
   }
 
+  const [restaurant, setRestaurant] = useState(null);
+  const setRestaurantHandler = (newRestaurant) => {
+    setRestaurant(newRestaurant);
+  }
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const setOpenDrawerHandler = (check) => {
+    setOpenDrawer(check);
+  }
+
 
 
   Modal.setAppElement('#root');
@@ -234,9 +243,6 @@ function App() {
     setPosition({ lat: latitude, lng: longitude });
   }, [latitude, longitude]);
   
-  
-
-  
 
   return (
     <div className="App">
@@ -262,6 +268,9 @@ function App() {
           bestRestaurant={bestRestaurant}
           path={path}
           setPathHandler={setPathHandler}
+          setRestaurantHandler={setRestaurantHandler}
+          openDrawer={openDrawer}
+          setOpenDrawerHandler={setOpenDrawerHandler}
           />
       </div>
 
@@ -270,7 +279,8 @@ function App() {
       <SwipeableEdgeDrawer props={{restaurants: restaurants, 
         keyword: keyword, url: url, client: client, 
         position: position, handleRestaurantBoxSetModalData: handleRestaurantBoxSetModalData,
-        setPathHandler: setPathHandler
+        setPathHandler: setPathHandler, setRestaurantHandler: setRestaurantHandler,
+        restaurant: restaurant, openDrawer: openDrawer, setOpenDrawerHandler: setOpenDrawerHandler
         }}/>
         
       {/* {

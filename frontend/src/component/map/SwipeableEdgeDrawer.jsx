@@ -45,9 +45,9 @@ const reviewEvaluationExplain = (
 
 const SwipeableEdgeDrawer = ({props}) => {
     
-    const [openDrawer, setOpenDrawer] = useState(false);
+    // const [openDrawer, setOpenDrawer] = useState(false);
     const [drawerWidth, setDrawerWidth] = useState(0);
-    const [restaurant, setRestaurant] = useState(null);
+    // const [restaurant, setRestaurant] = useState(null);
     const [openTime, setOpenTime] = useState(false);
     const [openReview, setOpenReview] = useState(false);
     const [isCopy, setIsCopy] = useState(false);
@@ -66,14 +66,27 @@ const SwipeableEdgeDrawer = ({props}) => {
         }
             
     }, [props.restaurants]);
+    useEffect(() => {
+        console.log("check")
+        console.log(props.restaurant)
+        if(props.restaurant !== null && props.restaurant !== undefined) {
+            handler.openDrawerHandler();
+        }
+            
+    }, [props.restaurant]);
+
+    // useEffect(() => {
+    //     handler.openDrawerHandler();
+    // }, [props.openDrawer]);
 
     const handler = {
         openDrawerHandler: () => {
-            if(openDrawer) {
-                setOpenDrawer(false);
+            console.log(props.openDrawer)
+            if(props.openDrawer) {
+                props.setOpenDrawerHandler(false);
                 setDrawerWidth(70);
             } else {
-                setOpenDrawer(true);
+                props.setOpenDrawerHandler(true);
                 setDrawerWidth(500)
             }
         },
@@ -87,9 +100,8 @@ const SwipeableEdgeDrawer = ({props}) => {
                 endLng: result.geometry.location.lng
             });
         
-            setRestaurant(response.data.result);
+            props.setRestaurantHandler(response.data.result);
             props.setPathHandler(response.data.result.graphHopperResponse)
-            console.log(response.data.result)
         },
         openTimeHandler: () => {
             setOpenTime(!openTime);
@@ -106,7 +118,7 @@ const SwipeableEdgeDrawer = ({props}) => {
         reviewTranslationHandler: async (text, review) => {
             if(review.translationJp === undefined) {
                 const response = await props.client.post(props.url + '/search/reviews/translation', {text: text});
-                setRestaurant(prevObject => ({
+                props.setRestaurantHandler(prevObject => ({
                     ...prevObject,
                     reviews: prevObject.reviews.map(item => item.text === review.text ? {...item, translationJp: response.data.translationText} : item)
                 }));
@@ -116,7 +128,7 @@ const SwipeableEdgeDrawer = ({props}) => {
             
         },
         resetRestaurantHandler: () => {
-            setRestaurant(null);
+            props.setRestaurantHandler(null);
             props.setPathHandler(null);
         }
     }
@@ -139,7 +151,7 @@ const SwipeableEdgeDrawer = ({props}) => {
     
     }, marginRight: "30px", marginTop: "20px", marginBottom: "20px"}} className="no-scrollbar">
             {
-                (openDrawer && restaurant === null) && props.restaurants.results.map( (result, index) => (
+                (props.openDrawer && props.restaurant === null) && props.restaurants.results.map( (result, index) => (
                     <Card sx={{ width: "400px", margin: "20px auto", cursor: "pointer"}} onClick={() => handler.searchPlaceIdHandler(result)} key={index}>
                         <CardContent>
                             <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
@@ -159,7 +171,7 @@ const SwipeableEdgeDrawer = ({props}) => {
                 ))
             }
             {
-                restaurant !== null &&
+                (props.restaurant !== null && props.restaurant !== undefined) &&
                 <Card sx={{ width: "400px", margin: "20px auto"}}>
                         <CardContent>
                             <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
@@ -167,20 +179,25 @@ const SwipeableEdgeDrawer = ({props}) => {
                             </Typography>
                             <Typography variant="h5" component="div">
                             <List>
-                                <ListItemButton onClick={() => handler.copyHandler(restaurant.name)}>
-                                    <ListItemText primary={`name: ${restaurant.name}`}  />
+                                <ListItemButton onClick={() => handler.copyHandler(props.restaurant.name)}>
+                                    <ListItemText primary={`name: ${props.restaurant?.name}`}  />
                                 </ListItemButton>
                             </List>
                             </Typography>
                             <Typography sx={{ mb: 1.5 }} color="text.secondary">
                             <List>
-                                <ListItemButton onClick={() => handler.copyHandler(restaurant.formatted_address)}>
-                                    <ListItemText primary={`address: ${restaurant.formatted_address}`} />
+                                <ListItemButton onClick={() => handler.copyHandler(props.restaurant.formatted_address)}>
+                                    <ListItemText primary={`address: ${props.restaurant?.formatted_address}`} />
                                 </ListItemButton>
-                                <ListItemButton onClick={() => handler.copyHandler(restaurant.current_opening_hours?.open_now !== null ? restaurant.current_opening_hours?.open_now.toString() : "ignorance")}>
-                                    <ListItemText primary={`open: ${restaurant.current_opening_hours?.open_now !== null ? restaurant.current_opening_hours?.open_now.toString() : "ignorance"}`} />
+                                <ListItemButton onClick={() => handler.copyHandler(props.restaurant.current_opening_hours?.open_now !== null ? props.restaurant.current_opening_hours?.open_now.toString() : "ignorance")}>
+                                    <ListItemText primary={`open: ${ props.restaurant
+                                        ? (props.restaurant.current_opening_hours?.open_now !== null 
+                                                ? props.restaurant.current_opening_hours.open_now.toString() 
+                                                : "ignorance")
+                                            : "X"
+                                        }`} />
                                 </ListItemButton>
-                                {restaurant.current_opening_hours?.weekday_text &&
+                                {props.restaurant.current_opening_hours?.weekday_text &&
                                     <>
                                         <ListItemButton onClick={handler.openTimeHandler}>
                                             <ListItemText primary="open time" />
@@ -189,7 +206,7 @@ const SwipeableEdgeDrawer = ({props}) => {
                                         <Collapse in={openTime} timeout="auto" unmountOnExit>
                                             <List component="div" disablePadding>
                                                 {
-                                                    restaurant.current_opening_hours.weekday_text.map( (data, index) =>
+                                                    props.restaurant.current_opening_hours.weekday_text.map( (data, index) =>
                                                                 <ListItemButton sx={{ pl: 4 }} key={index} onClick={() => handler.copyHandler(data)}>
                                                                     <ListItemText primary={data} />
                                                                 </ListItemButton>
@@ -202,29 +219,29 @@ const SwipeableEdgeDrawer = ({props}) => {
                                 }
                                
                                 
-                                <ListItemButton onClick={() => handler.copyHandler(restaurant.formatted_phone_number)}>
-                                    <ListItemText primary={`phone number: ${restaurant.formatted_phone_number}`} />
+                                <ListItemButton onClick={() => handler.copyHandler(props.restaurant.formatted_phone_number)}>
+                                    <ListItemText primary={`phone number: ${props.restaurant?.formatted_phone_number}`} />
                                 </ListItemButton>
-                                <ListItemButton onClick={() => handler.copyHandler(restaurant.delivery ? restaurant.delivery.toString() : 'ignorance')}>
-                                    <ListItemText primary={`delivery: ${restaurant.delivery ? restaurant.delivery.toString() : 'ignorance'}`} />
+                                <ListItemButton onClick={() => handler.copyHandler(props.restaurant.delivery ? props.restaurant.delivery.toString() : 'ignorance')}>
+                                    <ListItemText primary={`delivery: ${props.restaurant?.delivery ? props.restaurant?.delivery.toString() : 'ignorance'}`} />
                                 </ListItemButton>
-                                <ListItemButton onClick={() => handler.copyHandler(restaurant.takeout ? restaurant.takeout.toString() : 'ignorance')}>
-                                    <ListItemText primary={`takeout: ${restaurant.delivery ? restaurant.delivery.toString() : 'ignorance'}`} />
+                                <ListItemButton onClick={() => handler.copyHandler(props.restaurant.takeout ? props.restaurant.takeout.toString() : 'ignorance')}>
+                                    <ListItemText primary={`takeout: ${props.restaurant?.delivery ? props.restaurant?.delivery.toString() : 'ignorance'}`} />
                                 </ListItemButton>
-                                <ListItemButton onClick={() => handler.copyHandler(restaurant.price_level)}>
-                                    <ListItemText primary={`price_level: ${restaurant.price_level}`} />
+                                <ListItemButton onClick={() => handler.copyHandler(props.restaurant.price_level)}>
+                                    <ListItemText primary={`price_level: ${props.restaurant?.price_level}`} />
                                 </ListItemButton>
-                                <ListItemButton onClick={() => handler.copyHandler(restaurant.url)}>
-                                    <ListItemText primary={`map: ${restaurant.url}`} />
+                                <ListItemButton onClick={() => handler.copyHandler(props.restaurant.url)}>
+                                    <ListItemText primary={`map: ${props.restaurant?.url}`} />
                                 </ListItemButton>
-                                <ListItemButton onClick={() => handler.copyHandler(restaurant.website)}>
-                                    <ListItemText primary={`website: ${restaurant.website}`} />
+                                <ListItemButton onClick={() => handler.copyHandler(props.restaurant.website)}>
+                                    <ListItemText primary={`website: ${props.restaurant?.website}`} />
                                 </ListItemButton>
-                                <ListItemButton onClick={() => handler.copyHandler(restaurant.types ? restaurant.types.join(', ') : 'ignorance')}>
-                                    <ListItemText primary={`keyward: ${restaurant.types ? restaurant.types.join(', ') : 'ignorance'}`} />
+                                <ListItemButton onClick={() => handler.copyHandler(props.restaurant.types ? props.restaurant.types.join(', ') : 'ignorance')}>
+                                    <ListItemText primary={`keyward: ${props.restaurant?.types ? props.restaurant?.types.join(', ') : 'ignorance'}`} />
                                 </ListItemButton>
                                 {
-                                    restaurant.reviews && 
+                                    props.restaurant.reviews && 
                                     <>
                                         <ListItemButton onClick={() => setOpenReview(!openReview)} >
                                             <ListItemText primary="reviews" />
@@ -234,13 +251,13 @@ const SwipeableEdgeDrawer = ({props}) => {
                                                 <div style={{marginLeft: "auto", marginRight: "auto", textAlign: "center"}}>
                                                     <CustomWidthTooltip title={reviewEvaluationExplain} placement="top">
                                                         <img src={
-                                                            restaurant.reviewEvaluation === "POSITIVE" ? tomatoImg :
-                                                            restaurant.reviewEvaluation === "NEGATIVE" ? decayTomatoImg : greenTomato 
+                                                            props.restaurant.reviewEvaluation === "POSITIVE" ? tomatoImg :
+                                                            props.restaurant.reviewEvaluation === "NEGATIVE" ? decayTomatoImg : greenTomato 
                                                         } style={{width: "100px"}}/>
                                                     </CustomWidthTooltip>
                                                 </div>
                                                 {
-                                                    restaurant.reviews.map( (review, index) => 
+                                                    props.restaurant.reviews.map( (review, index) => 
                                                     <List component="div" disablePadding key={index} sx={{
                                                         border: 1, // 1px 테두리
                                                         borderColor: 'grey.500', // 테두리 색상 설정
