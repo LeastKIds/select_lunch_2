@@ -269,8 +269,10 @@ function App() {
          
       <SwipeableEdgeDrawer props={{restaurants: restaurants, 
         keyword: keyword, url: url, client: client, 
-        position: position, handleRestaurantBoxSetModalData: handleRestaurantBoxSetModalData}}/>
-      
+        position: position, handleRestaurantBoxSetModalData: handleRestaurantBoxSetModalData,
+        setPathHandler: setPathHandler
+        }}/>
+        
       {/* {
         restaurants && restaurants.next_page_token !== null &&
         <div style={{display: "flex", justifyContent: "Center", marginTop: "20px"}}>

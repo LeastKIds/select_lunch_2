@@ -88,6 +88,7 @@ const SwipeableEdgeDrawer = ({props}) => {
             });
         
             setRestaurant(response.data.result);
+            props.setPathHandler(response.data.result.graphHopperResponse)
             console.log(response.data.result)
         },
         openTimeHandler: () => {
