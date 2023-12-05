@@ -117,6 +117,7 @@ const SwipeableEdgeDrawer = ({props}) => {
         },
         resetRestaurantHandler: () => {
             setRestaurant(null);
+            props.setPathHandler(null);
         }
     }
 
