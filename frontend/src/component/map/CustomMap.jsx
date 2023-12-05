@@ -12,13 +12,13 @@ import { Feature } from 'ol';
 import { Style, Icon, Stroke } from 'ol/style';
 import { LineString } from 'ol/geom';
 
-const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants, client, url, keyword, bestRestaurant}) => {
+const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants, client, url, keyword, bestRestaurant, path, setPathHandler}) => {
   const mapRef = useRef();
   const [map, setMap] = useState();
 
   const [markers, setMarkers] = useState([]);
 
-  const [path, setPath] = useState(null);
+  // const [path, setPath] = useState(null);
   const [currentPathFeature, setCurrentPathFeature] = useState(null);
   const [vectorSourceSave, setVectorSourceSave] = useState(null);
 
@@ -134,7 +134,8 @@ const CustomMap = ({position, handleSetPosition, handleSetModalData, restaurants
             })
             const result = response.data.result;
             handleSetModalData(result);
-            setPath(result.graphHopperResponse);
+            console.log(restaurants);
+            setPathHandler(result.graphHopperResponse);
             console.log(result);
            
 

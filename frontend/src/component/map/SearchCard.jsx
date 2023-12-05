@@ -166,7 +166,7 @@ const SearchCard = ({props}) => {
                     </>
                 }
             </div>
-            <SettingsSuggestIcon color="primary" style={{marginTop: "10px"}} onClick={() => setIsOption(!isOption)}>add_circle</SettingsSuggestIcon>
+            <SettingsSuggestIcon color="primary" style={{marginTop: "10px", cursor: "pointer"}} onClick={() => setIsOption(!isOption)}>add_circle</SettingsSuggestIcon>
             <div style={{alignContent: "center", maxHeight: isOption ? "300px" : "0px", overflow: 'hidden', transition: 'max-height 0.5s ease-in-out', marginTop: "10px"}}>
                 <div style={{display: "flex", }}>
                     <p style={{margin: 0, paddingRight: "10px"}}>opacity</p>

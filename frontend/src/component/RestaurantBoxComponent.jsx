@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { useState } from "react";
 
-import tomatoImg from '../img/tomato.jpg';
+import tomatoImg from '../img/tomato.png';
 import decayTomatoImg from '../img/decay_tomato.png'
 import greenTomato from '../img/green_tomato.png'
 

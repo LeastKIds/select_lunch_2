@@ -6,9 +6,7 @@ import Modal from 'react-modal';
 
 import CustomMap from './component/map/CustomMap'
 
-import tomatoImg from './img/tomato.jpg'
-import decayTomatoImg from './img/decay_tomato.png'
-import greenTomato from './img/green_tomato.png'
+
 import { Paper, TextField } from "@mui/material";
 import SearchCard from "./component/map/SearchCard";
 import SwipeableEdgeDrawer from "./component/map/SwipeableEdgeDrawer";
@@ -16,7 +14,7 @@ import SwipeableEdgeDrawer from "./component/map/SwipeableEdgeDrawer";
 
 function App() {
 
-  const url = "https://d0d5-126-44-208-85.ngrok-free.app"
+  const url = "https://44da-126-44-208-85.ngrok-free.app"
 
   const client = axios.create({
     withCredentials: true,
@@ -127,6 +125,11 @@ function App() {
   const [bestRestaurant, setBestRestaurant] = useState([]);
   const handleSetBestRestaurant = (newBestRestaurant) => {
     setBestRestaurant(newBestRestaurant);
+  }
+
+  const [path, setPath] = useState(null);
+  const setPathHandler = (newPath) => {
+    setPath(newPath);
   }
 
 
@@ -257,13 +260,17 @@ function App() {
           client={client}
           keyword={keyword}
           bestRestaurant={bestRestaurant}
+          path={path}
+          setPathHandler={setPathHandler}
           />
       </div>
 
-      {
-        (restaurants && restaurants.results.length !== 0) &&
-        <SwipeableEdgeDrawer props={{restaurants: restaurants}}/>
-      }
+      
+         
+      <SwipeableEdgeDrawer props={{restaurants: restaurants, 
+        keyword: keyword, url: url, client: client, 
+        position: position, handleRestaurantBoxSetModalData: handleRestaurantBoxSetModalData}}/>
+      
       {/* {
         restaurants && restaurants.next_page_token !== null &&
         <div style={{display: "flex", justifyContent: "Center", marginTop: "20px"}}>
